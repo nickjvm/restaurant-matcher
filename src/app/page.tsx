@@ -1,9 +1,10 @@
-import { NearbyRestaurants } from '@/components/NearbyRestaurants';
+import { fetchUser } from '@/actions/users';
+import GetStarted from '@/components/GetStarted';
 
-export default function Home() {
+export default async function Home() {
+  const user = await fetchUser()
+
   return (
-    <main className="p-6 h-full">
-      <NearbyRestaurants />
-    </main>
+    <GetStarted user={user} />
   );
 }

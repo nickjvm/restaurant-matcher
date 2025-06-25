@@ -2,12 +2,19 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { fetchNearbyRestaurants, YelpBusiness } from "@/lib/yelp";
 import RestaurantCard from "./RestaurantCard";
 import { TbThumbDown, TbThumbUp } from "react-icons/tb";
+import { useParams } from "next/navigation";
 
-export function NearbyRestaurants() {
+type Vote = {
+  businessId: string;
+  voteType: string;
+}
+export function NearbyRestaurants({ votes }: { votes: Vote[] }) {
+  const params = useParams()
+
   const [index, setIndex] = useState(0);
   const [coords, setCoords] = useState<{
     latitude: number;
@@ -36,7 +43,8 @@ export function NearbyRestaurants() {
   });
 
   // Flatten the pages array
-  const restaurants = data?.pages.flat() || [];
+  // and filter out cards they've already voted on
+  const restaurants = (data?.pages.flat() || []).filter((restaurant) => !votes.find((vote) => vote.businessId === restaurant.id));
 
   useEffect(() => {
     window.navigator.geolocation.getCurrentPosition((position) => {
@@ -53,25 +61,42 @@ export function NearbyRestaurants() {
     }
   }, [index, fetchNextPage, restaurants.length, isFetchingNextPage, hasNextPage])
 
+  const [isPending, startTransition] = useTransition();
+
   if (isLoading) return <p>Loading nearby restaurants...</p>;
   if (isError) return <p>Failed to load restaurants.</p>;
 
   if (!restaurants || restaurants.length === 0) {
     return <p>No restaurants found.</p>;
   }
-  const vote = (like: boolean) => {
-    setIndex((prevIndex) => prevIndex + 1);
-    console.log(like ? 'upvote' : 'downvote')
+  const handleVote = (like: boolean) => {
+    startTransition(() => {
+      fetch('/api/vote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId: params.id,
+          businessId: restaurants[index].id,
+          voteType: like ? 'like' : 'dislike',
+        }),
+      }).then(() => {
+        setIndex(index + 1);
+      })
+    })
   }
+
+
   return (
     <div className="h-full flex items-center justify-center">
       <div className="flex flex-col items-center gap-8">
         <RestaurantCard restaurant={restaurants[index]} stack />
         <div className="flex gap-8 justify-center">
-          <button onClick={() => vote(false)} className="bg-red-500/30 p-2 w-12 h-12 rounded-full text-white outline outline-offset-2 outline-red-500 flex items-center justify-center cursor-pointer hover:bg-red-500/50 transition hover:text-white">
+          <button onClick={() => handleVote(false)} disabled={isPending} className="bg-red-500/30 p-2 w-12 h-12 rounded-full text-white outline outline-offset-2 outline-red-500 flex items-center justify-center cursor-pointer hover:bg-red-500/50 transition hover:text-white">
             <TbThumbDown className="w-6 h-6 text-red-800" />
           </button>
-          <button onClick={() => vote(true)} className="bg-green-500/30 p-2 w-12 h-12 rounded-full outline outline-offset-2 outline-green-500 flex items-center justify-center cursor-pointer hover:bg-green-500/50 transition text-green-800">
+          <button onClick={() => handleVote(true)} disabled={isPending} className="bg-green-500/30 p-2 w-12 h-12 rounded-full outline outline-offset-2 outline-green-500 flex items-center justify-center cursor-pointer hover:bg-green-500/50 transition text-green-800">
             <TbThumbUp className="w-6 h-6" />
           </button>
         </div>
