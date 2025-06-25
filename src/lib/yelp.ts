@@ -1,4 +1,15 @@
-// lib/yelp.ts
+function shuffleArray<T>(array: T[]): T[] {
+  // Create a copy of the original array to avoid mutating it
+  const shuffled = [...array];
+  
+  // Fisher-Yates shuffle algorithm
+  for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  return shuffled;
+}
 export interface YelpBusiness {
     id: string;
     name: string;
@@ -6,6 +17,9 @@ export interface YelpBusiness {
     rating: number;
     review_count: number;
     price?: string;
+    attributes: {
+      menu_url?: string
+    }
     location: {
       address1: string;
       city: string;
@@ -17,6 +31,7 @@ export interface YelpBusiness {
       longitude: number;
     };
     categories: { title: string }[];
+    url: string
   }
   
   export const YELP_API_KEY = process.env.YELP_API_KEY!;
@@ -43,7 +58,7 @@ export interface YelpBusiness {
     }
   
     const data = await res.json();
-    return data.businesses;
+    return shuffleArray(data.businesses);
   }
   
 
