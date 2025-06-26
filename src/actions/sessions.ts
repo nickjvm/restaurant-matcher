@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { and, eq } from "drizzle-orm";
 import { v4 as uuid } from 'uuid';
 import { db } from "@/lib/db";
-import { sessions, sessionUsers, votes } from "@/../db/schema";
+import { matches, sessions, sessionUsers, votes } from "@/../db/schema";
 import { redirect } from "next/navigation";
 
 export async function fetchSession(sessionId: string) {
@@ -47,6 +47,12 @@ export async function startSession(params: StartSessionParams) {
     redirect(`/play/${session.sessionId}`)
 }
 
+export async function getSession(sessionId: string) {
+    const result = await db.select().from(sessions).where(eq(sessions.sessionId, sessionId)).get();
+
+    return result
+}
+
 export async function vote(sessionId: string, businessId: string, voteType: 'like' | 'dislike') {
     const cookieStore = await cookies();
     const userId = cookieStore.get('userId')?.value;
@@ -54,14 +60,66 @@ export async function vote(sessionId: string, businessId: string, voteType: 'lik
         throw new Error('User not found');
     }
 
-    await db.insert(votes).values({
-        sessionId,
-        businessId,
-        voteType,
-        userId
-    })  
+    try {
+        await db.insert(votes).values({
+            sessionId,
+            businessId,
+            voteType,
+            userId
+        }).onConflictDoUpdate({
+            target: [votes.userId, votes.sessionId, votes.businessId],
+            set: { voteType },
+        });
+    } catch (error) {
+        console.log(error)
+    }
+
+    if (voteType === 'like') {
+       const match =  await db.select().from(votes).where(
+            and(
+                eq(votes.sessionId, sessionId),
+                eq(votes.businessId, businessId),
+                eq(votes.voteType, 'like')
+            )
+        )
+
+        console.log(match)
+        if (match.length > 1) {
+            await db.insert(matches).values({
+                sessionId,
+                businessId,
+            })
+
+            const details = await fetch(`http://localhost:3000/api/restaurants/yelp/details?id=${businessId}`).then(r => r.json())
+            return {
+                match: true,
+                business: details
+            }
+        }
+    }
+
+    return {
+        match: false,
+        business: null
+    }
 }
 
+export async function getMatch(sessionId: string) {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+    if (!userId) {
+        throw new Error('User not found');
+    }
+    const result = await db.select().from(matches).where(
+        eq(matches.sessionId, sessionId)
+    ).get();
+
+    if (result) {
+        return await fetch(`http://localhost:3000/api/restaurants/yelp/details?id=${result.businessId}`).then(r => r.json())
+    }
+
+    return null   
+}
 export async function getVotes(sessionId: string) {
     const cookieStore = await cookies();
     const userId = cookieStore.get('userId')?.value;
@@ -75,6 +133,5 @@ export async function getVotes(sessionId: string) {
         )
     );
 
-    console.log(result)
     return result
 }

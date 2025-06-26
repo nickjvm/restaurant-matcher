@@ -77,6 +77,6 @@ export default function GetStarted({ user }: { user?: User }) {
                     {isPending ? 'Loading...' : 'Let\'s Go!'}
                 </button>
             </div>
-        </form >
+        </form>
     )
 }

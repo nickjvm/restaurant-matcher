@@ -3,22 +3,22 @@
 import { YelpBusiness } from "@/lib/yelp";
 import Link from "next/link";
 import { useEffect } from "react";
-import { BiFoodMenu } from "react-icons/bi";
+import { BiFoodMenu, BiInfoCircle, BiInfoSquare } from "react-icons/bi";
 
 type Props = {
     restaurant: YelpBusiness;
-    stack: boolean
+    stack?: boolean
 }
 export default function RestaurantCard({ restaurant, stack }: Props) {
-    useEffect(() => {
-        async function fetchBusinessDetails() {
-            const res = await fetch(`/api/restaurants/yelp/details?id=${restaurant.id}`);
-            const data = await res.json();
-            console.log(data)
-        }
+    // useEffect(() => {
+    //     async function fetchBusinessDetails() {
+    //         const res = await fetch(`/api/restaurants/yelp/details?id=${restaurant.id}`);
+    //         const data = await res.json();
+    //         console.log(data)
+    //     }
 
-        fetchBusinessDetails()
-    }, [restaurant.id])
+    //     fetchBusinessDetails()
+    // }, [restaurant.id])
 
     return (
         <div className="relative">
@@ -42,27 +42,31 @@ export default function RestaurantCard({ restaurant, stack }: Props) {
                     <p className="text-sm">
                         ⭐ {restaurant.rating} ({restaurant.review_count} reviews)
                     </p>
-                    {restaurant.attributes.menu_url ? <p>
-                        <Link
-                            href={restaurant.attributes.menu_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-blue-500 p-2 rounded text-white w-full text-center mt-3 hover:bg-blue-600 transition flex items-center justify-center gap-2"
-                        >
-                            <BiFoodMenu className="w-4 h-4" />
-                            View Menu</Link>
-                    </p> : <p>
-                        <Link
-                            href={restaurant.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-blue-500 p-2 rounded text-white w-full text-center mt-3 hover:bg-blue-600 transition flex items-center justify-center gap-2"
-                        >
-                            <BiFoodMenu className="w-4 h-4" />
-                            View Details</Link>
-                    </p>}
+                    <div className="flex gap-2">
+
+                        {restaurant.attributes.menu_url && (<p className="grow">
+                            <Link
+                                href={restaurant.attributes.menu_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-blue-500 p-2 rounded text-white w-full text-center mt-3 hover:bg-blue-600 transition flex items-center justify-center gap-2"
+                            >
+                                <BiFoodMenu className="w-4 h-4" />
+                                Menu</Link>
+                        </p>)}
+                        {restaurant.url && (<p className="grow">
+                            <Link
+                                href={restaurant.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-blue-500 p-2 rounded text-white w-full text-center mt-3 hover:bg-blue-600 transition flex items-center justify-center gap-2"
+                            >
+                                <BiInfoCircle className="w-4 h-4" />
+                                Details</Link>
+                        </p>)}
+                    </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
