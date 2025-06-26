@@ -16,6 +16,7 @@ import RestaurantCard from "@/components/RestaurantCard";
 import SignUp from "@/components/SignUp";
 import ConfettiComponent from "@/components/Confetti";
 import CardButton from "@/components/CardButton";
+import { useNotification } from "@/providers/NotificationProvider";
 
 type User = {
   name: string;
@@ -46,6 +47,7 @@ export function NearbyRestaurants({
   const params = useParams();
   const [match, setMatch] = useState<YelpBusiness | null>(null);
   const [index, setIndex] = useState(0);
+  const { addNotification } = useNotification();
 
   const {
     data,
@@ -96,11 +98,22 @@ export function NearbyRestaurants({
       socket.on("matched", (business: YelpBusiness) => {
         setMatch(business);
       });
+
       socket.emit("join", { user, sessionId: params.id });
+
+      socket.on("joined", (message) => {
+        console.log("User joined:", message.user?.name);
+        addNotification({
+          message: `${message.user?.name} has joined the session!`,
+          type: "info",
+          duration: 5000,
+        });
+      });
     }
 
     function onDisconnect() {
       socket.off("matched");
+      socket.off("joined");
     }
 
     if (socket.connected) {
@@ -112,7 +125,9 @@ export function NearbyRestaurants({
     return () => {
       onDisconnect();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id, user]);
+
   const [isPending, startTransition] = useTransition();
 
   if (!user) return <SignUp />;
@@ -159,42 +174,49 @@ export function NearbyRestaurants({
 
   return (
     <div className="h-full flex items-center justify-center">
-      <div className="flex flex-col items-center gap-8">
-        {match && (
-          <div className="flex gap-8 justify-center">
-            <ConfettiComponent />
-            Time to eat!
-          </div>
-        )}
+      <div className="flex flex-col items-center gap-4">
+        <div className="flex gap-8 justify-center">
+          {match && (
+            <>
+              <ConfettiComponent />
+              <h2 className="text-xl font-bold">🎉 You agreed! 🎉</h2>
+            </>
+          )}
+          {!match && (
+            <h2 className="text-xl font-bold">What do you think about...</h2>
+          )}
+        </div>
         <RestaurantCard
           className={cn(match && "animate-emphasize")}
           restaurant={match ?? restaurants[index]}
           stack={!match}
         />
-        {!match && (
-          <div className="flex gap-8 justify-center">
-            <CardButton
-              onClick={() => handleVote(false)}
-              disabled={isPending}
-              className="bg-red-500/30 hover:bg-red-500/50 text-red-800 outline-red-500"
-            >
-              <TbThumbDown className="w-6 h-6" />
+        <div className="mt-4 relative z-10">
+          {!match && (
+            <div className="flex gap-8 justify-center">
+              <CardButton
+                onClick={() => handleVote(false)}
+                disabled={isPending}
+                className="bg-red-500/30 hover:bg-red-500/50 text-red-800 outline-red-500"
+              >
+                <TbThumbDown className="w-6 h-6" />
+              </CardButton>
+              <CardButton
+                onClick={() => handleVote(true)}
+                disabled={isPending}
+                className="bg-green-500/30 hover:bg-green-500/50 outline-green-500 text-green-800"
+              >
+                <TbThumbUp className="w-6 h-6" />
+              </CardButton>
+            </div>
+          )}
+          {match && (
+            <CardButton as={Link} href="/" className="px-8">
+              <IoIosRepeat className="w-5 h-5" />
+              Try again?
             </CardButton>
-            <CardButton
-              onClick={() => handleVote(true)}
-              disabled={isPending}
-              className="bg-green-500/30 hover:bg-green-500/50 outline-green-500 text-green-800"
-            >
-              <TbThumbUp className="w-6 h-6" />
-            </CardButton>
-          </div>
-        )}
-        {match && (
-          <CardButton as={Link} href="/" className="px-8">
-            <IoIosRepeat className="w-5 h-5" />
-            Try again?
-          </CardButton>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

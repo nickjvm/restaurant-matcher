@@ -41,15 +41,18 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   if (match) {
     return (
-      <main className="p-6 h-full pt-[56px]">
-        <div className="flex gap-8 flex-col justify-center items-center">
-          <h2 className="text-center">It&apos;s a match!</h2>
+      <main className="p-6 h-full pt-[56px] flex flex-col items-center justify-center">
+        <div className="flex gap-4 flex-col justify-center items-center">
+          <h2 className="text-xl font-bold">🎉 You agreed! 🎉</h2>
+
           <ConfettiComponent />
           <RestaurantCard restaurant={match} className="animate-emphasize" />
-          <CardButton as={Link} href="/" className="px-8">
-            <IoRepeat className="w-5 h-5" />
-            Try again?
-          </CardButton>
+          <div className="mt-4 relative z-10">
+            <CardButton as={Link} href="/" className="px-8">
+              <IoRepeat className="w-5 h-5" />
+              Try again?
+            </CardButton>
+          </div>
         </div>
       </main>
     );

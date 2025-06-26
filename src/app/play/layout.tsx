@@ -1,43 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
 import { BsArrowLeft } from "react-icons/bs";
 import { IoIosShareAlt } from "react-icons/io";
 
-import { socket } from "@/lib/socket";
-import { useParams } from "next/navigation";
 export default function PlayLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const params = useParams();
-
-  useEffect(() => {
-    function onConnect() {
-      console.log("Connected to socket server");
-      socket.emit("join", params.id);
-      socket.on("joined", ({ user }) => {
-        console.log(`User ${user.name} joined session ${params.id}`);
-      });
-    }
-
-    if (socket.connected) {
-      onConnect();
-    }
-
-    function onDisconnect() {
-      socket.off("joined");
-      socket.off("voted");
-    }
-    socket.on("disconnect", onDisconnect);
-    socket.on("connect", onConnect);
-
-    return () => {
-      onDisconnect();
-    };
-  });
   function share() {
     navigator
       .share({
