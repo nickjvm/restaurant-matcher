@@ -8,6 +8,23 @@ body {
   height: 100%;
   min-height: 100%;
 }
+
+@theme {
+  --animate-emphasize: emphasize 1s;
+  @keyframes emphasize {
+    0% {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.1) rotate(2deg);
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+    }
+  }
+}
 /* :root {
   --background: #ffffff;
   --foreground: #171717;

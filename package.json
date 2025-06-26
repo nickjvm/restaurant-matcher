@@ -2,8 +2,9 @@
   "name": "restaurant-matcher",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "nodemon --exec node --loader ts-node/esm server.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -14,6 +15,8 @@
   "dependencies": {
     "@libsql/client": "^0.15.9",
     "@tanstack/react-query": "^5.81.2",
+    "@types/socket.io": "^3.0.2",
+    "clsx": "^2.1.1",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.44.2",
     "next": "15.3.4",
@@ -21,6 +24,9 @@
     "react-confetti": "^6.4.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "tailwind-merge": "^3.3.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
@@ -32,7 +38,9 @@
     "drizzle-kit": "^0.31.2",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
+    "nodemon": "^3.1.10",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }
