@@ -18,9 +18,8 @@ export default function PlayLayout({
     function onConnect() {
       console.log("Connected to socket server");
       socket.emit("join", params.id);
-      socket.on("joined", console.log);
-      socket.on("voted", ({ vote, businessId, userId }) => {
-        console.log(`User ${userId} voted ${vote} for business ${businessId}`);
+      socket.on("joined", ({ user }) => {
+        console.log(`User ${user.name} joined session ${params.id}`);
       });
     }
 

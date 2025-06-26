@@ -24,12 +24,15 @@ app.prepare().then(() => {
   io.on("connection", (socket) => {
     console.log("A user connected: " + socket.id);
 
-    socket.on("join", (sessionId: string) => {
-      socket.join(sessionId);
-      console.log("Message received:", sessionId);
+    socket.on(
+      "join",
+      ({ user, sessionId }: { user: { name: string }; sessionId: string }) => {
+        socket.join(sessionId);
+        console.log("Message received:", sessionId);
 
-      socket.to(sessionId).emit("joined", `User ${socket.id} has joined`);
-    });
+        socket.to(sessionId).emit("joined", { user });
+      }
+    );
 
     socket.on("match", ({ sessionId, business }) => {
       console.log("Match found:", business);

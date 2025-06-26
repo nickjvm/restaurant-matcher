@@ -96,6 +96,7 @@ export function NearbyRestaurants({
       socket.on("matched", (business: YelpBusiness) => {
         setMatch(business);
       });
+      socket.emit("join", { user, sessionId: params.id });
     }
 
     function onDisconnect() {
@@ -111,7 +112,7 @@ export function NearbyRestaurants({
     return () => {
       onDisconnect();
     };
-  }, []);
+  }, [params.id, user]);
   const [isPending, startTransition] = useTransition();
 
   if (!user) return <SignUp />;

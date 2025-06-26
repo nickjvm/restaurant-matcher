@@ -2,7 +2,7 @@
 import { cookies } from "next/headers";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { sessionUsers } from "@/../db/schema";
+import { sessionUsers } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
 
 export async function signUp(sessionId: string, name: string) {

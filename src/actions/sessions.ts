@@ -1,10 +1,11 @@
 "use server";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { and, eq } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
+
 import { db } from "@/lib/db";
-import { matches, sessions, sessionUsers, votes } from "@/../db/schema";
-import { redirect } from "next/navigation";
+import { matches, sessions, sessionUsers, votes } from "@/lib/db/schema";
 
 export async function fetchSession(sessionId: string) {
   const result = await db
@@ -111,7 +112,6 @@ export async function vote(
         )
       );
 
-    console.log(match);
     if (match.length > 1) {
       await db.insert(matches).values({
         sessionId,
