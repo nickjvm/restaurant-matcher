@@ -1,16 +1,47 @@
 {
   "name": "restaurant-matcher",
   "version": "0.1.0",
-  "private": true,
+  "description": "A real-time collaborative restaurant matching app where friends can swipe through restaurants together and find mutual matches",
+  "private": false,
   "type": "module",
+  "author": {
+    "name": "Nick VanMeter"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/restaurant-matcher.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/restaurant-matcher/issues"
+  },
+  "homepage": "https://github.com/yourusername/restaurant-matcher#readme",
+  "keywords": [
+    "restaurant",
+    "matcher",
+    "real-time",
+    "nextjs",
+    "socketio",
+    "maps",
+    "yelp",
+    "collaborative",
+    "swipe",
+    "dining"
+  ],
   "scripts": {
     "dev": "nodemon --exec node --loader ts-node/esm server.ts",
     "build": "next build",
     "start": "NODE_ENV=production node --loader ts-node/esm server.ts",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.10",

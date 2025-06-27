@@ -1,36 +1,47 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Overview
+
+This app is basically a Tinder for restaurants. Start a matching session and share the link with a friend. You'll both vote on restuarants until you both like the same restaurant, then you'll both know where you're going for dinner!
+
+### Highlights
+
+- Votes are updated in realtime via a socket connection. As soon as a match is determined, both users are notified instantly.
+- Uses the Yelp Fusion API to find restaurants near a given location
+- Location can be determined by `window.navigator` (if the user gives permission), IP address, or by moving the pin on an interactive Google map.
+
+**Sessions are public - anyone with the link can join a session, assuming there aren't already two users joined**
+
 ## Getting Started
 
-First, run the development server:
+### Environment Variables
+
+You will need a `.env` with values for:
+
+- [Yelp API Key](https://www.yelp.com/developers/v3/manage_app)
+- [Turso](https://turso.tech/) database URL
+  - You just need to create an empty database to start. Read on for migration & seeding details
+- Turso auth token
+- Google Maps API Key
+  `.env` keys:
+
+```
+YELP_API_KEY=
+TURSO_DATABASE_URL=
+TURSO_AUTH_TOKEN=
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
+```
+
+### Setup the Database
+
+Once you have your .env file created and populated, run `npm run db:migrate`. This should create the appropriate tables and columns. You can see the schema in `./src/lib/db/schema.ts`.
+
+### Run It!
+
+Then, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the app.
