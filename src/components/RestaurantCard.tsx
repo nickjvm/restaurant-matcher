@@ -52,12 +52,16 @@ export default function RestaurantCard({
         </div>
         <div>
           <p className="font-semibold">{restaurant.name}</p>
-          <p className="text-sm text-gray-600">
-            {restaurant.location.address1}, {restaurant.location.city}
-          </p>
-          <p className="text-sm">
-            ⭐ {restaurant.rating} ({restaurant.review_count} reviews)
-          </p>
+          {restaurant.location && (
+            <p className="text-sm text-gray-600">
+              {restaurant.location.address1}, {restaurant.location.city}
+            </p>
+          )}
+          {restaurant.rating && (
+            <p className="text-sm">
+              ⭐ {restaurant.rating} ({restaurant.review_count} reviews)
+            </p>
+          )}
           <div className="flex gap-2">
             {restaurant.attributes?.menu_url && (
               <p className="grow">

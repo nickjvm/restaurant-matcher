@@ -22,34 +22,44 @@ app.prepare().then(() => {
   });
 
   io.on("connection", (socket) => {
-    console.log("A user connected: " + socket.id);
+    socket.on("disconnect", () => {
+      socket.to(socket.data.sessionId).emit("notification", {
+        message: `${socket.data.user.name} has disconnected.`,
+        type: "info",
+      });
+      socket.leave(socket.data.sessionId);
+      socket.data = {};
+    });
 
     socket.on(
       "join",
-      ({ user, sessionId }: { user: { name: string }; sessionId: string }) => {
-        socket.join(sessionId);
-        console.log("Message received:", sessionId);
+      ({
+        user,
+        sessionId,
+      }: {
+        user: { name: string; id: string };
+        sessionId: string;
+      }) => {
+        socket.leave(socket.data.sessionId);
 
-        socket.to(sessionId).emit("joined", { user });
+        socket.data.user = user;
+        socket.data.sessionId = sessionId;
+
+        socket.join(sessionId);
+        socket.to(sessionId).emit("notification", {
+          message: `${socket.data.user.name} has joined the session!`,
+          type: "info",
+        });
+        socket
+          .to(sessionId)
+          .emit("joined", {
+            roomSize: io.sockets.adapter.rooms.get(sessionId)?.size || 0,
+          });
       }
     );
 
     socket.on("match", ({ sessionId, business }) => {
-      console.log("Match found:", business);
       socket.to(sessionId).emit("matched", business);
-    });
-
-    socket.on("vote", ({ sessionId, businessId, vote, userId }) => {
-      console.log(
-        `User ${userId} voted ${vote} for business ${businessId} in session ${sessionId}`
-      );
-      if (vote === "like") {
-        socket.to(sessionId).emit("voted", { vote, businessId, userId });
-      }
-    });
-
-    socket.on("disconnect", () => {
-      console.log("User disconnected: " + socket.id);
     });
   });
 
