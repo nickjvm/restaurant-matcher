@@ -54,7 +54,7 @@ export default function GetStarted({ user }: { user?: User }) {
   return (
     <form
       action={formAction}
-      className="m-auto p-4 h-full w-full max-w-128 flex flex-col items-center justify-center space-y-4"
+      className="m-auto p-4 h-full w-full max-w-128 flex flex-col items-center justify-center space-y-4 md:space-y-8"
     >
       <header className="text-center">
         <h2 className="text-lg font-bold">
