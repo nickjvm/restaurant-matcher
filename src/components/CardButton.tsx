@@ -1,5 +1,5 @@
-import cn from "@/app/utils/cn";
 import React from "react";
+import cn from "@/app/utils/cn";
 
 type Props<T extends React.ElementType> = {
   as?: T;

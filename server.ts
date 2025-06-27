@@ -23,10 +23,10 @@ app.prepare().then(() => {
 
   io.on("connection", (socket) => {
     socket.on("disconnect", () => {
-      socket.to(socket.data.sessionId).emit("notification", {
-        message: `${socket.data.user.name} has disconnected.`,
-        type: "info",
-      });
+      // socket.to(socket.data.sessionId).emit("notification", {
+      //   message: `${socket.data.user.name} has disconnected.`,
+      //   type: "info",
+      // });
       socket.leave(socket.data.sessionId);
       socket.data = {};
     });
@@ -47,14 +47,12 @@ app.prepare().then(() => {
 
         socket.join(sessionId);
         socket.to(sessionId).emit("notification", {
-          message: `${socket.data.user.name} has joined the session!`,
+          message: `${socket.data.user.name} joined!`,
           type: "info",
         });
-        socket
-          .to(sessionId)
-          .emit("joined", {
-            roomSize: io.sockets.adapter.rooms.get(sessionId)?.size || 0,
-          });
+        socket.to(sessionId).emit("joined", {
+          roomSize: io.sockets.adapter.rooms.get(sessionId)?.size || 0,
+        });
       }
     );
 

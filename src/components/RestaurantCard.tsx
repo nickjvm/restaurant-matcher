@@ -1,7 +1,9 @@
-import { YelpBusiness } from "@/lib/yelp";
 import Link from "next/link";
 import { BiFoodMenu, BiInfoCircle } from "react-icons/bi";
-import GameCard from "./GameCard";
+
+import { YelpBusiness } from "@/lib/yelp";
+
+import GameCard from "@/components/GameCard";
 
 type Props = {
   restaurant: YelpBusiness;
@@ -19,7 +21,7 @@ export default function RestaurantCard({
       className={className}
       stack={stack}
       title={restaurant.name}
-      image={restaurant.image_url}
+      image={restaurant.image_url ?? ""}
       subtitle={
         restaurant.location
           ? `${restaurant.location.address1}, ${restaurant.location.city}`

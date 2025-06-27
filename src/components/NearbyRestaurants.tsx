@@ -7,22 +7,23 @@ import Link from "next/link";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { IoIosRepeat } from "react-icons/io";
 import { TbThumbDown, TbThumbUp } from "react-icons/tb";
+import { BsArrowLeft, BsEmojiFrown } from "react-icons/bs";
+import { IoPersonAdd } from "react-icons/io5";
+import { FaRegHourglass, FaRegThumbsUp } from "react-icons/fa";
 
 import { fetchNearbyRestaurants, YelpBusiness } from "@/lib/yelp";
 import { socket } from "@/lib/socket";
-
 import cn from "@/app/utils/cn";
 
 import RestaurantCard from "@/components/RestaurantCard";
 import ConfettiComponent from "@/components/Confetti";
 import CardButton from "@/components/CardButton";
+import GameCard from "@/components/GameCard";
+
 import {
   Notification,
   useNotification,
 } from "@/providers/NotificationProvider";
-import { BsArrowLeft, BsEmojiFrown } from "react-icons/bs";
-import { IoPersonAdd } from "react-icons/io5";
-import GameCard from "./GameCard";
 
 type User = {
   name: string;
@@ -45,6 +46,7 @@ const LIMIT = 50;
 export function NearbyRestaurants({
   votes,
   user,
+  otherUser,
   session,
   sessionUserCount: _sessionUserCount,
 }: {
@@ -52,10 +54,12 @@ export function NearbyRestaurants({
   user: User;
   session: Session;
   sessionUserCount: number;
+  otherUser?: User;
 }) {
   const params = useParams();
   const [match, setMatch] = useState<YelpBusiness | null>(null);
   const [index, setIndex] = useState(0);
+  const [votingComplete, setVotingComplete] = useState(false);
   const [sessionUserCount, setSessionUserCount] = useState(_sessionUserCount);
   const { addNotification } = useNotification();
 
@@ -142,9 +146,21 @@ export function NearbyRestaurants({
 
   const [isPending, startTransition] = useTransition();
 
+  const share = () => {
+    navigator
+      .share({
+        title: "I'm Hungry",
+        text: "Lets figure out where to eat tonight!",
+        url: window.location.href,
+      })
+      .catch(() => {
+        // share cancelled
+      });
+  };
+
   if (isLoading)
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="h-full flex flex-col items-center justify-center">
         <GameCard
           title="Hang tight..."
           subtitle={`We're loading nearby restaurants`}
@@ -157,35 +173,206 @@ export function NearbyRestaurants({
         />
       </div>
     );
+
   if (isError)
     return (
-      <div className="h-full flex items-center justify-center">
-        <GameCard
-          title="Something went wrong"
-          subtitle={`Unable to load nearby restaurants`}
-          description={`in ${session.locationName}`}
-          image={
-            <div className="bg-gray-200 rounded h-full p-4 flex items-center justify-center">
-              <BsEmojiFrown className="w-12 h-12 text-gray-500" />
-            </div>
-          }
-          actions={[
-            <Link
-              key="retry"
-              href="/"
-              rel="noopener noreferrer"
-              className="bg-blue-500 p-2 rounded text-white w-full text-center mt-3 hover:bg-blue-600 transition flex items-center justify-center gap-2"
+      <div className="h-full flex flex-col items-center justify-center">
+        <div className="flex justify-between items-center -mx-6 -mt-6 self-stretch">
+          <Link
+            href="/"
+            className={cn(
+              "p-4 inline-block opacity-30 transition relative group",
+              "hover:opacity-100 focus:opacity-100 hover:text-red-800 focus:text-red-800"
+            )}
+          >
+            <BsArrowLeft className="w-6 h-6" />
+            <span
+              className={cn(
+                "absolute right-2 translate-x-full sm:translate-x-0 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
+                "group-hover:translate-x-full group-hover:opacity-100",
+                "group-focus:translate-x-full group-focus:opacity-100"
+              )}
             >
-              <BsArrowLeft className="w-4 h-4" />
-              Start Over
-            </Link>,
-          ]}
-        />
+              Exit
+            </span>
+          </Link>
+          <div>
+            {sessionUserCount < 2 && (
+              <button
+                onClick={share}
+                className={cn(
+                  "p-4 inline-block opacity-30 transition cursor-pointer relative group",
+                  "hover:opacity-100 focus:opacity-100 hover:text-blue-800 focus:text-blue-800"
+                )}
+              >
+                <IoPersonAdd className="w-6 h-6" />
+                <span
+                  className={cn(
+                    "absolute -translate-x-full sm:translate-x-0 left-2 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
+                    "group-hover:-translate-x-full group-hover:opacity-100",
+                    "group-focus:-translate-x-full group-focus:opacity-100"
+                  )}
+                >
+                  Invite
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-4 h-full justify-center">
+          <GameCard
+            title="Something went wrong"
+            subtitle={`Unable to load nearby restaurants`}
+            description={`in ${session.locationName}`}
+            image={
+              <div className="bg-gray-200 rounded h-full p-4 flex items-center justify-center">
+                <BsEmojiFrown className="w-12 h-12 text-gray-500" />
+              </div>
+            }
+            actions={[
+              <Link
+                key="retry"
+                href="/"
+                rel="noopener noreferrer"
+                className="bg-blue-500 p-2 rounded text-white w-full text-center mt-3 hover:bg-blue-600 transition flex items-center justify-center gap-2"
+              >
+                <BsArrowLeft className="w-4 h-4" />
+                Start Over
+              </Link>,
+            ]}
+          />
+        </div>
       </div>
     );
 
+  if (votingComplete) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center">
+        <div className="flex justify-between items-center -mx-6 -mt-6 self-stretch">
+          <Link
+            href="/"
+            className={cn(
+              "p-4 inline-block opacity-30 transition relative group",
+              "hover:opacity-100 focus:opacity-100 hover:text-red-800 focus:text-red-800"
+            )}
+          >
+            <BsArrowLeft className="w-6 h-6" />
+            <span
+              className={cn(
+                "absolute right-2 translate-x-full sm:translate-x-0 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
+                "group-hover:translate-x-full group-hover:opacity-100",
+                "group-focus:translate-x-full group-focus:opacity-100"
+              )}
+            >
+              Exit
+            </span>
+          </Link>
+          <div>
+            {sessionUserCount < 2 && (
+              <button
+                onClick={share}
+                className={cn(
+                  "p-4 inline-block opacity-30 transition cursor-pointer relative group",
+                  "hover:opacity-100 focus:opacity-100 hover:text-blue-800 focus:text-blue-800"
+                )}
+              >
+                <IoPersonAdd className="w-6 h-6" />
+                <span
+                  className={cn(
+                    "absolute -translate-x-full sm:translate-x-0 left-2 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
+                    "group-hover:-translate-x-full group-hover:opacity-100",
+                    "group-focus:-translate-x-full group-focus:opacity-100"
+                  )}
+                >
+                  Invite
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-4 h-full justify-center">
+          <GameCard
+            title="Voting complete!"
+            subtitle={`You've voted on all available restaurants`}
+            description={
+              otherUser
+                ? `Now we wait and see if ${otherUser?.name} likes any of the same restaurants as you!`
+                : `Make sure you share this session with a friend so they can vote too!`
+            }
+            image={
+              <div className="bg-green-800 rounded h-full p-4 flex items-center justify-center">
+                <FaRegThumbsUp className="w-12 h-12  text-white" />
+              </div>
+            }
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (!restaurants || restaurants.length === 0) {
-    return <p>No restaurants found.</p>;
+    return (
+      <div className="h-full flex flex-col items-center justify-center">
+        <div className="flex justify-between items-center -mx-6 -mt-6 self-stretch">
+          <Link
+            href="/"
+            className={cn(
+              "p-4 inline-block opacity-30 transition relative group",
+              "hover:opacity-100 focus:opacity-100 hover:text-red-800 focus:text-red-800"
+            )}
+          >
+            <BsArrowLeft className="w-6 h-6" />
+            <span
+              className={cn(
+                "absolute right-2 translate-x-full sm:translate-x-0 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
+                "group-hover:translate-x-full group-hover:opacity-100",
+                "group-focus:translate-x-full group-focus:opacity-100"
+              )}
+            >
+              Exit
+            </span>
+          </Link>
+          <div>
+            {sessionUserCount < 2 && (
+              <button
+                onClick={share}
+                className={cn(
+                  "p-4 inline-block opacity-30 transition cursor-pointer relative group",
+                  "hover:opacity-100 focus:opacity-100 hover:text-blue-800 focus:text-blue-800"
+                )}
+              >
+                <IoPersonAdd className="w-6 h-6" />
+                <span
+                  className={cn(
+                    "absolute -translate-x-full sm:translate-x-0 left-2 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
+                    "group-hover:-translate-x-full group-hover:opacity-100",
+                    "group-focus:-translate-x-full group-focus:opacity-100"
+                  )}
+                >
+                  Invite
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-4 h-full justify-center">
+          <GameCard
+            title="No restaurants found"
+            subtitle={`Either no restaurants were found nearby, or you've already voted on them all.`}
+            description={
+              otherUser
+                ? `Now we wait and see if ${otherUser?.name} likes any of the same restaurants as you!`
+                : `Make sure you share this session with a friend so they can vote too!`
+            }
+            image={
+              <div className="bg-gray-200 rounded h-full p-4 flex items-center justify-center">
+                <FaRegHourglass className="w-12 h-12  text-gray-500" />
+              </div>
+            }
+          />
+        </div>
+      </div>
+    );
   }
 
   const handleVote = (like: boolean) => {
@@ -216,23 +403,16 @@ export function NearbyRestaurants({
             });
             setMatch(response.business);
           } else {
-            setIndex(index + 1);
+            if (index + 1 >= restaurants.length) {
+              setVotingComplete(true);
+            } else {
+              setIndex(index + 1);
+            }
           }
         });
     });
   };
 
-  const share = () => {
-    navigator
-      .share({
-        title: "I'm Hungry",
-        text: "Lets figure out where to eat tonight!",
-        url: window.location.href,
-      })
-      .catch(() => {
-        // share cancelled
-      });
-  };
   return (
     <div className="h-full flex flex-col items-center justify-center">
       <div className="flex justify-between items-center -mx-6 -mt-6 self-stretch">

@@ -1,7 +1,9 @@
 "use client";
 
-import cn from "@/app/utils/cn";
 import React from "react";
+import { FaImage } from "react-icons/fa";
+
+import cn from "@/app/utils/cn";
 
 type Props = {
   image: string | React.ReactNode;
@@ -21,6 +23,12 @@ export default function GameCard({
   stack,
   className,
 }: Props) {
+  const fallbackImage = (
+    <div className="bg-blue-200 absolute top-0 left-0 right-0 rounded h-full p-4 flex items-center justify-center">
+      <FaImage className="w-12 h-12  text-blue-900" />
+    </div>
+  );
+  const [imgError, setImgError] = React.useState(false);
   return (
     <div className={cn("relative", className)}>
       {stack &&
@@ -39,14 +47,19 @@ export default function GameCard({
         <div>
           <div className="relative pt-[100%]">
             {typeof image === "string" ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={image}
-                  alt={title}
-                  className="rounded absolute top-0 left-0 w-full h-full object-cover"
-                />
-              </>
+              !image || imgError ? (
+                fallbackImage
+              ) : (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={image}
+                    alt={title}
+                    onError={() => setImgError(true)}
+                    className="rounded absolute top-0 left-0 w-full h-full object-cover"
+                  />
+                </>
+              )
             ) : (
               <div className="rounded absolute top-0 left-0 w-full h-full object-cover">
                 {image}
