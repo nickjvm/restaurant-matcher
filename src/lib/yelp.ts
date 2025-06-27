@@ -53,10 +53,6 @@ export async function fetchNearbyRestaurants(
   url.searchParams.set("limit", String(params.limit));
   url.searchParams.set("offset", String(params.offset));
   url.searchParams.set("open_now", String(true));
-  url.searchParams.set(
-    "sort_by",
-    shuffleArray(["best_match", "rating", "review_count", "distance"])[0]
-  );
 
   const res = await fetch(
     "/api/restaurants/yelp?" + url.searchParams.toString()

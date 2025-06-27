@@ -12,6 +12,8 @@ const app = next({ dev, hostname, port, turbo: dev });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
+  console.log(`> Starting ${dev ? "development" : "production"} server...`);
+
   const server = createServer((req, res) => {
     const parsedUrl = parse(req.url!, true);
     handle(req, res, parsedUrl);

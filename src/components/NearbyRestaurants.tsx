@@ -217,7 +217,7 @@ export function NearbyRestaurants({
     );
   }
 
-  if (!restaurants || restaurants.length === 0) {
+  if (!restaurants || (restaurants.length === 0 && !isFetchingNextPage)) {
     return (
       <div className="h-full flex flex-col items-center justify-center">
         <GameHeader buttonLeft={true} buttonRight={sessionUserCount < 2} />
