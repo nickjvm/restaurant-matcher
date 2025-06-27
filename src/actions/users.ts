@@ -1,45 +1,50 @@
 "use server";
 import { cookies } from "next/headers";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { sessionUsers } from "@/lib/db/schema";
+import { sessionUsers, users } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
 
 export async function signUp(sessionId: string, name: string) {
   const cookieStore = await cookies();
+  const userId = cookieStore.get("userId")?.value || uuid();
   const user = await db
-    .insert(sessionUsers)
+    .insert(users)
     .values({
-      userId: uuid(),
-      sessionId,
+      id: userId,
       name,
+    })
+    .onConflictDoUpdate({
+      target: users.id,
+      set: { name },
     })
     .returning()
     .get();
 
-  cookieStore.set("userId", user.userId, {
+  await db.insert(sessionUsers).values({
+    userId: user.id,
+    sessionId,
+  });
+
+  cookieStore.set("userId", user.id, {
     path: "/",
     httpOnly: true,
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 60 * 60 * 24 * 365,
   });
 
   return user;
 }
-export async function fetchUser(sessionId: string) {
+
+export async function fetchUser() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
 
   if (userId) {
     const result = await db
       .select()
-      .from(sessionUsers)
-      .where(
-        and(
-          eq(sessionUsers.userId, userId),
-          eq(sessionUsers.sessionId, sessionId)
-        )
-      )
+      .from(users)
+      .where(eq(users.id, userId))
       .get();
 
     return result;

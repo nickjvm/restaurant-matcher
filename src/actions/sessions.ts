@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 
 import { db } from "@/lib/db";
-import { matches, sessions, sessionUsers, votes } from "@/lib/db/schema";
+import { matches, sessions, sessionUsers, users, votes } from "@/lib/db/schema";
 
 export async function fetchSession(sessionId: string) {
   const result = await db
@@ -38,25 +38,50 @@ export async function startSession(params: StartSessionParams) {
     .returning()
     .get();
 
+  const userId = cookieStore.get("userId")?.value || uuid();
   const user = await db
-    .insert(sessionUsers)
+    .insert(users)
     .values({
-      userId: uuid(),
-      sessionId,
+      id: userId,
       name: params.name,
-      isCreator: "TRUE",
+    })
+    .onConflictDoUpdate({
+      target: users.id,
+      set: { name: params.name },
     })
     .returning()
     .get();
 
-  cookieStore.set("userId", user.userId, {
+  cookieStore.set("userId", user.id, {
     path: "/",
     httpOnly: true,
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 60 * 60 * 24 * 365,
+  });
+
+  await db.insert(sessionUsers).values({
+    userId: user.id,
+    sessionId: session.sessionId,
   });
 
   redirect(`/play/${session.sessionId}`);
+}
+
+export async function joinSession(sessionId: string) {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("userId")?.value;
+  if (!userId) {
+    throw new Error("User not found");
+  }
+
+  return await db
+    .insert(sessionUsers)
+    .values({
+      userId,
+      sessionId,
+    })
+    .returning()
+    .get();
 }
 
 export async function getSession(sessionId: string) {
@@ -68,7 +93,7 @@ export async function getSession(sessionId: string) {
 
   return {
     session: result[0].sessions,
-    users: result.map((r) => r.session_users),
+    users: result.map((r) => r.session_users!),
   };
 }
 

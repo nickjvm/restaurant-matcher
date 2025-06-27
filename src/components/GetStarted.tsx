@@ -9,11 +9,9 @@ type FormState = {
 } | null;
 
 type User = {
-  userId: string;
-  sessionId: string;
+  id: string;
   name: string;
   joinedAt: string | null;
-  isCreator: string | null;
 } | null;
 
 export default function GetStarted({ user }: { user?: User }) {

@@ -2,7 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { IoRepeat } from "react-icons/io5";
 
-import { getMatch, getSession, getVotes } from "@/actions/sessions";
+import {
+  getMatch,
+  getSession,
+  getVotes,
+  joinSession,
+} from "@/actions/sessions";
 import { fetchUser } from "@/actions/users";
 
 import { NearbyRestaurants } from "@/components/NearbyRestaurants";
@@ -14,33 +19,37 @@ import { BsArrowLeft } from "react-icons/bs";
 
 export default async function Page({ params }: { params: { id: string } }) {
   const { id } = await params;
-
   const { session, users } = await getSession(id);
 
   if (!session) {
     notFound();
   }
 
-  const user = await fetchUser(session.sessionId);
+  const user = await fetchUser();
+
+  const userInSession = users.some((u) => u.userId === user?.id);
+  if (!userInSession && users.length >= 2) {
+    return (
+      <main className="p-6 h-full pt-[56px] flex flex-col items-center justify-center">
+        <div className="flex gap-4 flex-col justify-center items-center">
+          <h2 className="text-xl font-bold">Matching in Progress...</h2>
+          <p>Looks like this session is already paired up.</p>
+          <div className="mt-4 relative z-10">
+            <CardButton as={Link} href="/" className="px-8">
+              <BsArrowLeft className="w-5 h-5" />
+              Start Your Own Match Game
+            </CardButton>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   if (!user) {
-    if (users.length >= 2) {
-      return (
-        <main className="p-6 h-full pt-[56px] flex flex-col items-center justify-center">
-          <div className="flex gap-4 flex-col justify-center items-center">
-            <h2 className="text-xl font-bold">Matching in Progress...</h2>
-            <p>Looks like this session is already paired up.</p>
-            <div className="mt-4 relative z-10">
-              <CardButton as={Link} href="/" className="px-8">
-                <BsArrowLeft className="w-5 h-5" />
-                Start Your Own Match Game
-              </CardButton>
-            </div>
-          </div>
-        </main>
-      );
-    }
     return <SignUp />;
+  } else if (!userInSession) {
+    const sessionUser = await joinSession(id);
+    users.push(sessionUser);
   }
 
   const match = await getMatch(id);

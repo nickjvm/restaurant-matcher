@@ -24,7 +24,7 @@ import { BsArrowLeft } from "react-icons/bs";
 
 type User = {
   name: string;
-  userId: string;
+  id: string;
 };
 type Vote = {
   businessId: string;
@@ -166,7 +166,7 @@ export function NearbyRestaurants({
             sessionId: params.id,
             businessId: restaurants[index].id,
             vote: like ? "like" : "dislike",
-            userId: user.userId,
+            userId: user.id,
           });
           if (response.match) {
             socket.emit("match", {

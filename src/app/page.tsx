@@ -1,5 +1,7 @@
+import { fetchUser } from "@/actions/users";
 import GetStarted from "@/components/GetStarted";
 
 export default async function Home() {
-  return <GetStarted />;
+  const user = await fetchUser();
+  return <GetStarted user={user} />;
 }
