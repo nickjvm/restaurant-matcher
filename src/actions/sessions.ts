@@ -19,29 +19,13 @@ export async function fetchSession(sessionId: string) {
 
 export type StartSessionParams = {
   name: string;
+  locationName: string;
   latitude: number;
   longitude: number;
 };
 
 export async function startSession(params: StartSessionParams) {
   const cookieStore = await cookies();
-  const sessionId = uuid();
-  cookieStore.set("location", `${params.latitude},${params.longitude}`, {
-    path: "/",
-    httpOnly: false,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
-  });
-  const session = await db
-    .insert(sessions)
-    .values({
-      sessionId,
-      locationName: params.name,
-      latitude: params.latitude,
-      longitude: params.longitude,
-    })
-    .returning()
-    .get();
 
   const userId = cookieStore.get("userId")?.value || uuid();
   const user = await db
@@ -56,6 +40,24 @@ export async function startSession(params: StartSessionParams) {
     })
     .returning()
     .get();
+
+  const session = await db
+    .insert(sessions)
+    .values({
+      sessionId: uuid(),
+      locationName: params.locationName,
+      latitude: params.latitude,
+      longitude: params.longitude,
+    })
+    .returning()
+    .get();
+
+  cookieStore.set("location", `${params.latitude},${params.longitude}`, {
+    path: "/",
+    httpOnly: false,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 7,
+  });
 
   cookieStore.set("userId", user.id, {
     path: "/",
