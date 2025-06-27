@@ -69,6 +69,7 @@ export default function MapPicker({
     } else {
       getLocationFromIpAddress();
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   const handleClick = (event: google.maps.MapMouseEvent) => {

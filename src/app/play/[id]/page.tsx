@@ -17,7 +17,11 @@ import RestaurantCard from "@/components/RestaurantCard";
 import ConfettiComponent from "@/components/Confetti";
 import CardButton from "@/components/CardButton";
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const { session } = await getSession(id);
 
@@ -27,7 +31,11 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   };
 }
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const { session, users } = await getSession(id);
 

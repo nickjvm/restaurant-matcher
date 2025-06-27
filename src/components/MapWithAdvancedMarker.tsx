@@ -132,6 +132,7 @@ export default function MapWithAdvancedMarker({
           console.error("Failed to get city from coordinates:", error);
         });
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [userLocation]);
 
   useEffect(() => {
@@ -183,6 +184,7 @@ export default function MapWithAdvancedMarker({
     };
 
     loadMap();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   return (
