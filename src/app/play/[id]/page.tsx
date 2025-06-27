@@ -27,7 +27,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const user = await fetchUser();
 
-  const userInSession = users.some((u) => u.userId === user?.id);
+  const userInSession = users.some((u) => u?.id === user?.id);
   if (!userInSession && users.length >= 2) {
     return (
       <main className="p-6 h-full pt-[56px] flex flex-col items-center justify-center">
@@ -46,10 +46,10 @@ export default async function Page({ params }: { params: { id: string } }) {
   }
 
   if (!user) {
-    return <SignUp />;
+    return <SignUp session={session} invitedBy={users[0]} />;
   } else if (!userInSession) {
     const sessionUser = await joinSession(id);
-    users.push(sessionUser);
+    users.push(sessionUser!);
   }
 
   const match = await getMatch(id);

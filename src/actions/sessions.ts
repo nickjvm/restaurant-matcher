@@ -81,7 +81,7 @@ export async function joinSession(sessionId: string) {
     throw new Error("User not found");
   }
 
-  return await db
+  await db
     .insert(sessionUsers)
     .values({
       userId,
@@ -89,6 +89,8 @@ export async function joinSession(sessionId: string) {
     })
     .returning()
     .get();
+
+  return await db.select().from(users).where(eq(users.id, userId)).get();
 }
 
 export async function getSession(sessionId: string) {
@@ -96,11 +98,14 @@ export async function getSession(sessionId: string) {
     .select()
     .from(sessions)
     .where(eq(sessions.sessionId, sessionId))
-    .leftJoin(sessionUsers, eq(sessions.sessionId, sessionUsers.sessionId));
+    .leftJoin(sessionUsers, eq(sessions.sessionId, sessionUsers.sessionId))
+    .leftJoin(users, eq(sessionUsers.userId, users.id));
 
   return {
     session: result[0].sessions,
-    users: result.map((r) => r.session_users!),
+    users: result
+      .map((r) => r.users)
+      .filter(Boolean) as (typeof users.$inferSelect)[],
   };
 }
 

@@ -4,7 +4,8 @@ import { useEffect, useState, useTransition } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { IoIosRepeat, IoIosShareAlt } from "react-icons/io";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { IoIosRepeat } from "react-icons/io";
 import { TbThumbDown, TbThumbUp } from "react-icons/tb";
 
 import { fetchNearbyRestaurants, YelpBusiness } from "@/lib/yelp";
@@ -13,14 +14,15 @@ import { socket } from "@/lib/socket";
 import cn from "@/app/utils/cn";
 
 import RestaurantCard from "@/components/RestaurantCard";
-import SignUp from "@/components/SignUp";
 import ConfettiComponent from "@/components/Confetti";
 import CardButton from "@/components/CardButton";
 import {
   Notification,
   useNotification,
 } from "@/providers/NotificationProvider";
-import { BsArrowLeft } from "react-icons/bs";
+import { BsArrowLeft, BsEmojiFrown } from "react-icons/bs";
+import { IoPersonAdd } from "react-icons/io5";
+import GameCard from "./GameCard";
 
 type User = {
   name: string;
@@ -35,6 +37,7 @@ type Session = {
   sessionId: string;
   latitude: number;
   longitude: number;
+  locationName: string;
 };
 
 const LIMIT = 50;
@@ -139,9 +142,47 @@ export function NearbyRestaurants({
 
   const [isPending, startTransition] = useTransition();
 
-  if (!user) return <SignUp />;
-  if (isLoading) return <p>Loading nearby restaurants...</p>;
-  if (isError) return <p>Failed to load restaurants.</p>;
+  if (isLoading)
+    return (
+      <div className="h-full flex items-center justify-center">
+        <GameCard
+          title="Hang tight..."
+          subtitle={`We're loading nearby restaurants`}
+          description={`in ${session.locationName}`}
+          image={
+            <div className="bg-gray-200 rounded h-full p-4 flex items-center justify-center">
+              <AiOutlineLoading3Quarters className="w-12 h-12 animate-spin text-gray-500" />
+            </div>
+          }
+        />
+      </div>
+    );
+  if (isError)
+    return (
+      <div className="h-full flex items-center justify-center">
+        <GameCard
+          title="Something went wrong"
+          subtitle={`Unable to load nearby restaurants`}
+          description={`in ${session.locationName}`}
+          image={
+            <div className="bg-gray-200 rounded h-full p-4 flex items-center justify-center">
+              <BsEmojiFrown className="w-12 h-12 text-gray-500" />
+            </div>
+          }
+          actions={[
+            <Link
+              key="retry"
+              href="/"
+              rel="noopener noreferrer"
+              className="bg-blue-500 p-2 rounded text-white w-full text-center mt-3 hover:bg-blue-600 transition flex items-center justify-center gap-2"
+            >
+              <BsArrowLeft className="w-4 h-4" />
+              Start Over
+            </Link>,
+          ]}
+        />
+      </div>
+    );
 
   if (!restaurants || restaurants.length === 0) {
     return <p>No restaurants found.</p>;
@@ -193,8 +234,8 @@ export function NearbyRestaurants({
       });
   };
   return (
-    <div className="h-full flex items-center justify-center">
-      <div className="fixed top-0 flex justify-between items-center w-full">
+    <div className="h-full flex flex-col items-center justify-center">
+      <div className="flex justify-between items-center -mx-6 -mt-6 self-stretch">
         <Link
           href="/"
           className={cn(
@@ -205,7 +246,7 @@ export function NearbyRestaurants({
           <BsArrowLeft className="w-6 h-6" />
           <span
             className={cn(
-              "absolute right-0 translate-x-full sm:translate-x-0 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
+              "absolute right-2 translate-x-full sm:translate-x-0 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
               "group-hover:translate-x-full group-hover:opacity-100",
               "group-focus:translate-x-full group-focus:opacity-100"
             )}
@@ -213,37 +254,36 @@ export function NearbyRestaurants({
             Exit
           </span>
         </Link>
-        {sessionUserCount < 2 && (
-          <button
-            onClick={share}
-            className={cn(
-              "p-4 inline-block opacity-30 transition cursor-pointer relative group",
-              "hover:opacity-100 focus:opacity-100 hover:text-blue-800 focus:text-blue-800"
-            )}
-          >
-            <IoIosShareAlt className="w-6 h-6" />
-            <span
+        <div>
+          {sessionUserCount < 2 && (
+            <button
+              onClick={share}
               className={cn(
-                "absolute -translate-x-full sm:translate-x-0 left-0 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
-                "group-hover:-translate-x-full group-hover:opacity-100",
-                "group-focus:-translate-x-full group-focus:opacity-100"
+                "p-4 inline-block opacity-30 transition cursor-pointer relative group",
+                "hover:opacity-100 focus:opacity-100 hover:text-blue-800 focus:text-blue-800"
               )}
             >
-              Share
-            </span>
-          </button>
-        )}
+              <IoPersonAdd className="w-6 h-6" />
+              <span
+                className={cn(
+                  "absolute -translate-x-full sm:translate-x-0 left-2 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
+                  "group-hover:-translate-x-full group-hover:opacity-100",
+                  "group-focus:-translate-x-full group-focus:opacity-100"
+                )}
+              >
+                Invite
+              </span>
+            </button>
+          )}
+        </div>
       </div>
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-4 h-full justify-center">
         <div className="flex gap-8 justify-center">
           {match && (
             <>
               <ConfettiComponent />
               <h2 className="text-xl font-bold">🎉 You agreed! 🎉</h2>
             </>
-          )}
-          {!match && (
-            <h2 className="text-xl font-bold">What do you think about...</h2>
           )}
         </div>
         <RestaurantCard

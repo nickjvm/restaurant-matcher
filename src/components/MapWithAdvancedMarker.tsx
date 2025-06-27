@@ -6,6 +6,8 @@ import { FaLocationArrow } from "react-icons/fa";
 import cn from "@/app/utils/cn";
 
 type Props = {
+  location?: google.maps.LatLngLiteral;
+  editable?: boolean;
   onLocationChange?: (
     coords: { lat: number; lng: number },
     city: string | null
@@ -17,9 +19,13 @@ const defaultLocation: google.maps.LatLngLiteral = {
   lng: -122.4194,
 };
 
-export default function MapWithAdvancedMarker({ onLocationChange }: Props) {
+export default function MapWithAdvancedMarker({
+  onLocationChange,
+  location = defaultLocation,
+  editable = true,
+}: Props) {
   const [userLocation, setUserLocation] =
-    useState<google.maps.LatLngLiteral>(defaultLocation);
+    useState<google.maps.LatLngLiteral>(location);
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -146,31 +152,34 @@ export default function MapWithAdvancedMarker({ onLocationChange }: Props) {
         center: userLocation,
         zoom: 15,
         mapId: "8ba138aae55db801aa3a226d",
+        disableDefaultUI: true,
       });
 
       markerRef.current = new AdvancedMarkerElement({
         map: mapRef.current,
         position: userLocation,
-        gmpDraggable: true,
+        gmpDraggable: editable,
       });
 
       if (!getLocationFromCookie()) {
         getCurrentLocation();
       }
 
-      markerRef.current.addListener("dragend", () => {
-        const position = markerRef.current
-          ?.position as google.maps.LatLngLiteral;
+      if (editable) {
+        markerRef.current.addListener("dragend", () => {
+          const position = markerRef.current
+            ?.position as google.maps.LatLngLiteral;
 
-        const coords = { lat: position.lat, lng: position.lng };
-        setUserLocation(coords);
-      });
+          const coords = { lat: position.lat, lng: position.lng };
+          setUserLocation(coords);
+        });
 
-      mapRef.current.addListener("click", (e: google.maps.MapMouseEvent) => {
-        if (!e.latLng) return;
-        const coords = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-        setUserLocation(coords);
-      });
+        mapRef.current.addListener("click", (e: google.maps.MapMouseEvent) => {
+          if (!e.latLng) return;
+          const coords = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+          setUserLocation(coords);
+        });
+      }
     };
 
     loadMap();
@@ -190,7 +199,7 @@ export default function MapWithAdvancedMarker({ onLocationChange }: Props) {
           className={cn(
             "absolute bottom-3 left-1/2 -translate-x-1/2",
             "mt-2 p-2 px-4 flex items-center gap-2 rounded-full whitespace-nowrap text-xs cursor-pointer",
-            "text-blue-600 bg-white/70 focus:bg-blue-100/50 hover:bg-blue-100/50 transition border border-blue-500"
+            "text-blue-600 bg-white/80 focus:bg-blue-100/80 hover:bg-blue-100/80 transition border border-blue-500"
           )}
         >
           <FaLocationArrow className="w-3 h-3" />

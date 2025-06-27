@@ -58,7 +58,7 @@ export default function GetStarted({ user }: { user?: User }) {
     >
       <header className="text-center">
         <h2 className="text-lg font-bold">
-          Let&apos;s find somewhere to eat near {!locality && "you!"}
+          Find somewhere to eat near {!locality && "you!"}
         </h2>
         {locality && <h3 className="text-xl font-bold">{locality}!</h3>}
       </header>
