@@ -8,7 +8,6 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { IoIosRepeat } from "react-icons/io";
 import { TbThumbDown, TbThumbUp } from "react-icons/tb";
 import { BsArrowLeft, BsEmojiFrown } from "react-icons/bs";
-import { IoPersonAdd } from "react-icons/io5";
 import { FaRegHourglass, FaRegThumbsUp } from "react-icons/fa";
 
 import { fetchNearbyRestaurants, YelpBusiness } from "@/lib/yelp";
@@ -24,6 +23,7 @@ import {
   Notification,
   useNotification,
 } from "@/providers/NotificationProvider";
+import GameHeader from "./GameHeader";
 
 type User = {
   name: string;
@@ -146,18 +146,6 @@ export function NearbyRestaurants({
 
   const [isPending, startTransition] = useTransition();
 
-  const share = () => {
-    navigator
-      .share({
-        title: "I'm Hungry",
-        text: "Lets figure out where to eat tonight!",
-        url: window.location.href,
-      })
-      .catch(() => {
-        // share cancelled
-      });
-  };
-
   if (isLoading)
     return (
       <div className="h-full flex flex-col items-center justify-center">
@@ -177,48 +165,7 @@ export function NearbyRestaurants({
   if (isError)
     return (
       <div className="h-full flex flex-col items-center justify-center">
-        <div className="flex justify-between items-center -mx-6 -mt-6 self-stretch">
-          <Link
-            href="/"
-            className={cn(
-              "p-4 inline-block opacity-30 transition relative group",
-              "hover:opacity-100 focus:opacity-100 hover:text-red-800 focus:text-red-800"
-            )}
-          >
-            <BsArrowLeft className="w-6 h-6" />
-            <span
-              className={cn(
-                "absolute right-2 translate-x-full sm:translate-x-0 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
-                "group-hover:translate-x-full group-hover:opacity-100",
-                "group-focus:translate-x-full group-focus:opacity-100"
-              )}
-            >
-              Exit
-            </span>
-          </Link>
-          <div>
-            {sessionUserCount < 2 && (
-              <button
-                onClick={share}
-                className={cn(
-                  "p-4 inline-block opacity-30 transition cursor-pointer relative group",
-                  "hover:opacity-100 focus:opacity-100 hover:text-blue-800 focus:text-blue-800"
-                )}
-              >
-                <IoPersonAdd className="w-6 h-6" />
-                <span
-                  className={cn(
-                    "absolute -translate-x-full sm:translate-x-0 left-2 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
-                    "group-hover:-translate-x-full group-hover:opacity-100",
-                    "group-focus:-translate-x-full group-focus:opacity-100"
-                  )}
-                >
-                  Invite
-                </span>
-              </button>
-            )}
-          </div>
-        </div>
+        <GameHeader buttonLeft={true} buttonRight={sessionUserCount < 2} />
         <div className="flex flex-col items-center gap-4 h-full justify-center">
           <GameCard
             title="Something went wrong"
@@ -248,48 +195,8 @@ export function NearbyRestaurants({
   if (votingComplete) {
     return (
       <div className="h-full flex flex-col items-center justify-center">
-        <div className="flex justify-between items-center -mx-6 -mt-6 self-stretch">
-          <Link
-            href="/"
-            className={cn(
-              "p-4 inline-block opacity-30 transition relative group",
-              "hover:opacity-100 focus:opacity-100 hover:text-red-800 focus:text-red-800"
-            )}
-          >
-            <BsArrowLeft className="w-6 h-6" />
-            <span
-              className={cn(
-                "absolute right-2 translate-x-full sm:translate-x-0 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
-                "group-hover:translate-x-full group-hover:opacity-100",
-                "group-focus:translate-x-full group-focus:opacity-100"
-              )}
-            >
-              Exit
-            </span>
-          </Link>
-          <div>
-            {sessionUserCount < 2 && (
-              <button
-                onClick={share}
-                className={cn(
-                  "p-4 inline-block opacity-30 transition cursor-pointer relative group",
-                  "hover:opacity-100 focus:opacity-100 hover:text-blue-800 focus:text-blue-800"
-                )}
-              >
-                <IoPersonAdd className="w-6 h-6" />
-                <span
-                  className={cn(
-                    "absolute -translate-x-full sm:translate-x-0 left-2 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
-                    "group-hover:-translate-x-full group-hover:opacity-100",
-                    "group-focus:-translate-x-full group-focus:opacity-100"
-                  )}
-                >
-                  Invite
-                </span>
-              </button>
-            )}
-          </div>
-        </div>
+        <GameHeader buttonLeft={true} buttonRight={sessionUserCount < 2} />
+
         <div className="flex flex-col items-center gap-4 h-full justify-center">
           <GameCard
             title="Voting complete!"
@@ -313,48 +220,8 @@ export function NearbyRestaurants({
   if (!restaurants || restaurants.length === 0) {
     return (
       <div className="h-full flex flex-col items-center justify-center">
-        <div className="flex justify-between items-center -mx-6 -mt-6 self-stretch">
-          <Link
-            href="/"
-            className={cn(
-              "p-4 inline-block opacity-30 transition relative group",
-              "hover:opacity-100 focus:opacity-100 hover:text-red-800 focus:text-red-800"
-            )}
-          >
-            <BsArrowLeft className="w-6 h-6" />
-            <span
-              className={cn(
-                "absolute right-2 translate-x-full sm:translate-x-0 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
-                "group-hover:translate-x-full group-hover:opacity-100",
-                "group-focus:translate-x-full group-focus:opacity-100"
-              )}
-            >
-              Exit
-            </span>
-          </Link>
-          <div>
-            {sessionUserCount < 2 && (
-              <button
-                onClick={share}
-                className={cn(
-                  "p-4 inline-block opacity-30 transition cursor-pointer relative group",
-                  "hover:opacity-100 focus:opacity-100 hover:text-blue-800 focus:text-blue-800"
-                )}
-              >
-                <IoPersonAdd className="w-6 h-6" />
-                <span
-                  className={cn(
-                    "absolute -translate-x-full sm:translate-x-0 left-2 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
-                    "group-hover:-translate-x-full group-hover:opacity-100",
-                    "group-focus:-translate-x-full group-focus:opacity-100"
-                  )}
-                >
-                  Invite
-                </span>
-              </button>
-            )}
-          </div>
-        </div>
+        <GameHeader buttonLeft={true} buttonRight={sessionUserCount < 2} />
+
         <div className="flex flex-col items-center gap-4 h-full justify-center">
           <GameCard
             title="No restaurants found"
@@ -415,48 +282,8 @@ export function NearbyRestaurants({
 
   return (
     <div className="h-full flex flex-col items-center justify-center">
-      <div className="flex justify-between items-center -mx-6 -mt-6 self-stretch">
-        <Link
-          href="/"
-          className={cn(
-            "p-4 inline-block opacity-30 transition relative group",
-            "hover:opacity-100 focus:opacity-100 hover:text-red-800 focus:text-red-800"
-          )}
-        >
-          <BsArrowLeft className="w-6 h-6" />
-          <span
-            className={cn(
-              "absolute right-2 translate-x-full sm:translate-x-0 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
-              "group-hover:translate-x-full group-hover:opacity-100",
-              "group-focus:translate-x-full group-focus:opacity-100"
-            )}
-          >
-            Exit
-          </span>
-        </Link>
-        <div>
-          {sessionUserCount < 2 && (
-            <button
-              onClick={share}
-              className={cn(
-                "p-4 inline-block opacity-30 transition cursor-pointer relative group",
-                "hover:opacity-100 focus:opacity-100 hover:text-blue-800 focus:text-blue-800"
-              )}
-            >
-              <IoPersonAdd className="w-6 h-6" />
-              <span
-                className={cn(
-                  "absolute -translate-x-full sm:translate-x-0 left-2 top-1/2 sm:opacity-0 -translate-y-1/2 transition",
-                  "group-hover:-translate-x-full group-hover:opacity-100",
-                  "group-focus:-translate-x-full group-focus:opacity-100"
-                )}
-              >
-                Invite
-              </span>
-            </button>
-          )}
-        </div>
-      </div>
+      <GameHeader buttonLeft={true} buttonRight={sessionUserCount < 2} />
+
       <div className="flex flex-col items-center gap-4 h-full justify-center">
         <div className="flex gap-8 justify-center">
           {match && (
