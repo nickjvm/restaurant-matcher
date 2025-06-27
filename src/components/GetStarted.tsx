@@ -1,7 +1,8 @@
 "use client";
 
 import { startSession } from "@/actions/sessions";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
+import MapPicker from "./MapPicker";
 
 type FormState = {
   sessionId: string;
@@ -16,31 +17,9 @@ type User = {
 
 export default function GetStarted({ user }: { user?: User }) {
   const [coords, setCoords] = useState<{
-    latitude: number;
-    longitude: number;
+    lat: number;
+    lng: number;
   } | null>(null);
-
-  useEffect(() => {
-    window.navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setCoords({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-      },
-      () => {
-        fetch("/api/location")
-          .then((r) => r.json())
-          .then(({ data }) => {
-            setCoords({
-              latitude: data.lat,
-              longitude: data.lon,
-            });
-          });
-      }
-    );
-  }, []);
-
   async function handleSubmit(prevState: FormState, formData: FormData) {
     if (!coords) {
       return { ...prevState, error: "Location access is required" };
@@ -50,8 +29,8 @@ export default function GetStarted({ user }: { user?: User }) {
       const name = formData.get("name") as string;
       const result = await startSession({
         name,
-        latitude: coords.latitude,
-        longitude: coords.longitude,
+        latitude: coords.lat,
+        longitude: coords.lng,
       });
       return result;
     } catch (error) {
@@ -70,8 +49,9 @@ export default function GetStarted({ user }: { user?: User }) {
   return (
     <form
       action={formAction}
-      className="p-2 h-full flex items-center justify-center"
+      className="p-2 h-full flex flex-col items-center justify-center"
     >
+      <MapPicker onLocationSelect={(location) => setCoords(location)} />
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-2">
           <label htmlFor="name">Your Name</label>
@@ -91,7 +71,7 @@ export default function GetStarted({ user }: { user?: User }) {
             <input
               type="text"
               readOnly
-              value={coords?.latitude || ""}
+              value={coords?.lat || ""}
               id="latitude"
               className="border border-gray-300 rounded p-2 w-full"
             />
@@ -101,7 +81,7 @@ export default function GetStarted({ user }: { user?: User }) {
             <input
               type="text"
               readOnly
-              value={coords?.longitude || ""}
+              value={coords?.lng || ""}
               id="longitude"
               className="border border-gray-300 rounded p-2 w-full"
             />

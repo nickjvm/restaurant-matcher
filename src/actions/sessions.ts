@@ -26,7 +26,12 @@ export type StartSessionParams = {
 export async function startSession(params: StartSessionParams) {
   const cookieStore = await cookies();
   const sessionId = uuid();
-
+  cookieStore.set("location", `${params.latitude},${params.longitude}`, {
+    path: "/",
+    httpOnly: false,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 7,
+  });
   const session = await db
     .insert(sessions)
     .values({
