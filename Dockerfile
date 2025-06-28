@@ -32,17 +32,25 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy necessary files from builder
-COPY --from=builder /app/package*.json ./
+# Install production dependencies
+COPY package*.json ./
+RUN npm install --production
+
+# Copy built files from builder
+COPY --from=builder /app/next.config.js ./
+COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/server.ts .
 
-# Copy environment variables from build stage
-COPY --from=builder /app/.env* ./
+# Install ts-node and typescript
+RUN npm install -g ts-node typescript
+
+# Install production dependencies for server.ts
+RUN npm install @types/node
 
 # Expose the application port
 EXPOSE 3000
 
-# Start the application using ts-node with ESM loader
-CMD ["node", "--loader", "ts-node/esm", "server.ts"]
+# Start the application
+CMD ["npm", "run", "start"]
