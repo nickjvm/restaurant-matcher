@@ -32,22 +32,22 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Install production dependencies
+# Copy package files and install production dependencies
 COPY package*.json ./
 RUN npm install --production
 
-# Copy built files from builder
-COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/tsconfig.json ./
+# Copy necessary files from the root directory
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.js ./
+COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/server.ts .
 
-# Install ts-node and typescript
+# Install ts-node and typescript globally
 RUN npm install -g ts-node typescript
 
-# Install production dependencies for server.ts
-RUN npm install @types/node
+# Install @types/node as a production dependency
+RUN npm install @types/node --save-prod
 
 # Expose the application port
 EXPOSE 3000

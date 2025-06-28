@@ -1,6 +1,5 @@
 # Only exclude files that are not needed in production
 node_modules
-.next
 .git
 .gitignore
 README.md
@@ -12,10 +11,10 @@ coverage
 .npm
 .prettierrc
 eslint.config.js
-next-env.d.ts
-
-# production
-build
+.next/cache
+.next/standalone
+.next/trace
+.next/turbo-trace-*.log
 
 # misc
 **/.DS_Store
