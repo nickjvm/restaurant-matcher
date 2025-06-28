@@ -37,17 +37,7 @@ COPY package*.json ./
 RUN npm install --production
 
 # Copy necessary files from the root directory
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/tsconfig.json ./
-COPY --from=builder /app/server.ts .
-
-# Install ts-node and typescript globally
-RUN npm install -g ts-node typescript
-
-# Install @types/node as a production dependency
-RUN npm install @types/node --save-prod
+COPY --from=builder ./app ./
 
 # Expose the application port
 EXPOSE 3000
