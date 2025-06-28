@@ -2,38 +2,44 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package.json package-lock.json* ./
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
 RUN npm ci
 
-# Copy the rest of the application source code
+# Copy the rest of the application
 COPY . .
 
-# Set environment variables for build-time and runtime configuration
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
+# Set build arguments with defaults
+ARG TURSO_DATABASE_URL=""
+ARG TURSO_AUTH_TOKEN=""
+ARG YELP_API_KEY=""
+ARG NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=""
 
-ARG TURSO_DATABASE_URL
-ENV TURSO_DATABASE_URL=${TURSO_DATABASE_URL}
-
-ARG TURSO_AUTH_TOKEN
-ENV TURSO_AUTH_TOKEN=${TURSO_AUTH_TOKEN}
-
-ARG YELP_API_KEY
-ENV YELP_API_KEY=${YELP_API_KEY}
-
-ARG NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-ENV NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+# Set environment variables from build arguments
+ENV TURSO_DATABASE_URL=$TURSO_DATABASE_URL \
+    TURSO_AUTH_TOKEN=$TURSO_AUTH_TOKEN \
+    YELP_API_KEY=$YELP_API_KEY \
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
 # Build the application
 RUN npm run build
 
-# Use a fresh Node.js 20 Alpine image for running the app
+# Production stage
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Copy built files and dependencies from the builder stage
-COPY --from=builder ./app ./
+ENV NODE_ENV=production
+
+# Copy necessary files from builder
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy environment variables from build stage
+COPY --from=builder /app/.env* ./
 
 # Expose the application port
 EXPOSE 3000
