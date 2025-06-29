@@ -29,9 +29,9 @@
     "dining"
   ],
   "scripts": {
-    "dev": "nodemon --exec node --loader ts-node/esm server.ts",
+    "dev": "nodemon server.js",
     "build": "next build",
-    "start": "NODE_ENV=production node --loader ts-node/esm server.ts",
+    "start": "NODE_ENV=production node server.js",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",

@@ -15,7 +15,7 @@ app.prepare().then(() => {
   console.log(`> Starting ${dev ? "development" : "production"} server...`);
 
   const server = createServer((req, res) => {
-    const parsedUrl = parse(req.url!, true);
+    const parsedUrl = parse(req.url, true);
     handle(req, res, parsedUrl);
   });
 
@@ -36,15 +36,7 @@ app.prepare().then(() => {
       socket.data = {};
     });
 
-    socket.on(
-      "join",
-      ({
-        user,
-        sessionId,
-      }: {
-        user: { name: string; id: string };
-        sessionId: string;
-      }) => {
+    socket.on("join", ({ user, sessionId }) => {
         socket.leave(socket.data.sessionId);
 
         socket.data.user = user;
@@ -58,8 +50,7 @@ app.prepare().then(() => {
         socket.to(sessionId).emit("joined", {
           roomSize: io.sockets.adapter.rooms.get(sessionId)?.size || 0,
         });
-      }
-    );
+    });
 
     socket.on("match", ({ sessionId, business }) => {
       socket.to(sessionId).emit("matched", business);
