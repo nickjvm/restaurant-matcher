@@ -13,6 +13,7 @@ type Props = {
   actions?: React.ReactNode[];
   stack?: boolean;
   className?: string;
+  summary?: string;
 };
 export default function GameCard({
   image,
@@ -22,6 +23,7 @@ export default function GameCard({
   actions,
   stack,
   className,
+  summary,
 }: Props) {
   const fallbackImage = (
     <div className="bg-blue-200 absolute top-0 left-0 right-0 rounded h-full p-4 flex items-center justify-center">
@@ -68,9 +70,10 @@ export default function GameCard({
           </div>
         </div>
         <div>
-          <p className="font-semibold">{title}</p>
-          {subtitle && <p className="text-sm text-gray-600">{subtitle}</p>}
-          {description && <p className="text-sm">{description}</p>}
+          <p className="font-semibold text-lg">{title}</p>
+          {summary && <p className="mb-2">{summary}</p>}
+          {subtitle && <p className=" text-gray-600">{subtitle}</p>}
+          {description && <p className="">{description}</p>}
 
           <div className="flex gap-2">
             {actions?.map(

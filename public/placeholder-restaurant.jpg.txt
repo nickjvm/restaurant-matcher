@@ -1,0 +1,7 @@
+# This is a placeholder - you should add an actual image file
+# You can download a placeholder restaurant image and save it as:
+# /public/placeholder-restaurant.jpg
+
+# Or use a service like:
+# https://via.placeholder.com/400x300/cccccc/666666?text=Restaurant
+# https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300

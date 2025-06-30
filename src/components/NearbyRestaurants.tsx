@@ -10,7 +10,11 @@ import { TbThumbDown, TbThumbUp } from "react-icons/tb";
 import { BsArrowLeft, BsEmojiFrown } from "react-icons/bs";
 import { FaRegHourglass, FaRegThumbsUp } from "react-icons/fa";
 
-import { fetchNearbyRestaurants, YelpBusiness } from "@/lib/yelp";
+import {
+  fetchNearbyRestaurants,
+  FetchNearbyRestaurantsResponse,
+  YelpBusiness,
+} from "@/lib/google-places";
 import { socket } from "@/lib/socket";
 import cn from "@/app/utils/cn";
 
@@ -70,7 +74,7 @@ export function NearbyRestaurants({
     isFetchingNextPage,
     isLoading,
     isError,
-  } = useInfiniteQuery<YelpBusiness[]>({
+  } = useInfiniteQuery<FetchNearbyRestaurantsResponse>({
     queryKey: ["restaurants", session.latitude, session.longitude],
     initialPageParam: 0,
     queryFn: ({ pageParam }) =>
@@ -79,19 +83,22 @@ export function NearbyRestaurants({
         longitude: session.longitude,
         offset: (pageParam as number) * LIMIT,
         limit: LIMIT,
+        nextPageToken: pageParam as string | undefined,
       }),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchInterval: false,
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (lastPage) => {
       // Return the next page number if there are more items
-      return lastPage.length === LIMIT ? allPages.length : undefined;
+      return lastPage.places.length === LIMIT
+        ? lastPage.nextPageToken
+        : undefined;
     },
   });
 
   // Flatten the pages array
   // and filter out cards they've already voted on
-  const restaurants = (data?.pages.flat() || []).filter(
+  const restaurants = (data?.pages.map((p) => p.places).flat() || []).filter(
     (restaurant) => !votes.find((vote) => vote.businessId === restaurant.id)
   );
 
