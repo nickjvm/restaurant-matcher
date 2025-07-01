@@ -27,7 +27,8 @@ import {
   Notification,
   useNotification,
 } from "@/providers/NotificationProvider";
-import GameHeader from "./GameHeader";
+import GameHeader from "@/components/GameHeader";
+import StaticMap from "@/components/StaticMap";
 
 type User = {
   name: string;
@@ -64,7 +65,7 @@ export function NearbyRestaurants({
   const [votingComplete, setVotingComplete] = useState(false);
   const [sessionUserCount, setSessionUserCount] = useState(_sessionUserCount);
   const { addNotification } = useNotification();
-
+  const [intent, setIntent] = useState<"left" | "right" | null>(null);
   const { data, isLoading, isError } = useQuery<FetchNearbyRestaurantsResponse>(
     {
       queryKey: ["restaurants", session.latitude, session.longitude],
@@ -128,6 +129,11 @@ export function NearbyRestaurants({
 
   const [isPending, startTransition] = useTransition();
 
+  const filteredPlaces = data?.places.filter((place) => {
+    // Filter out places that have already been voted on
+    return !votes.some((vote) => vote.businessId === place.id);
+  });
+
   if (isLoading)
     return (
       <div className="h-full flex flex-col items-center justify-center">
@@ -138,9 +144,15 @@ export function NearbyRestaurants({
           photos={[
             <div
               key="loading"
-              className="bg-gray-200 rounded h-full p-4 flex items-center justify-center"
+              className="bg-gray-200 rounded h-full flex items-center justify-center relative"
             >
-              <AiOutlineLoading3Quarters className="w-12 h-12 animate-spin text-gray-500" />
+              <StaticMap
+                lat={session.latitude}
+                lng={session.longitude}
+                zoom={12}
+                className="mb-2 w-full h-full object-cover rounded"
+              />
+              <AiOutlineLoading3Quarters className="absolute top-1/2 left-1/2 -translate-1/2 w-12 h-12 animate-spin text-gray-500" />
             </div>,
           ]}
         />
@@ -208,7 +220,7 @@ export function NearbyRestaurants({
     );
   }
 
-  if (!data?.places || (data.places.length === 0 && !isLoading)) {
+  if (!filteredPlaces || (filteredPlaces?.length === 0 && !isLoading)) {
     return (
       <div className="h-full flex flex-col items-center justify-center">
         <GameHeader buttonLeft={true} buttonRight={sessionUserCount < 2} />
@@ -237,27 +249,27 @@ export function NearbyRestaurants({
   }
 
   const handleVote = (like: boolean) => {
-    startTransition(() => {
-      fetch("/api/vote", {
+    startTransition(async () => {
+      await fetch("/api/vote", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           sessionId: params.id,
-          businessId: data.places[index].id,
+          businessId: filteredPlaces[index].id,
           voteType: like ? "like" : "dislike",
         }),
       })
         .then((r) => r.json())
         .then((response) => {
           votes.push({
-            businessId: data.places[index].id,
+            businessId: filteredPlaces[index].id,
             voteType: like ? "like" : "dislike",
           });
           socket.emit("vote", {
             sessionId: params.id,
-            businessId: data.places[index].id,
+            businessId: filteredPlaces[index].id,
             vote: like ? "like" : "dislike",
             userId: user.id,
           });
@@ -268,9 +280,10 @@ export function NearbyRestaurants({
             });
             setMatch(response.business);
           } else {
+            setIntent(null);
             setIndex((prevIndex) => {
               const nextIndex = prevIndex + 1;
-              if (nextIndex >= data.places.length) {
+              if (nextIndex >= filteredPlaces.length) {
                 setVotingComplete(true);
                 return prevIndex; // Don't increment if we've reached the end
               }
@@ -294,25 +307,48 @@ export function NearbyRestaurants({
             </>
           )}
         </div>
-        <RestaurantCard
-          className={cn(match && "animate-emphasize")}
-          restaurant={match ?? data.places[index]}
-          stack={!match}
-        />
-        <div className="mt-4 relative z-10">
+        <div className="relative z-10">
+          <RestaurantCard
+            draggable={!match}
+            onDrag={setIntent}
+            onDragEnd={(intent) => {
+              if (intent) {
+                handleVote(intent === "left");
+              }
+            }}
+            className={cn(
+              "transition",
+              match && "animate-emphasize",
+              intent === "left" && "bg-red-100 border-red-200",
+              intent === "right" && "bg-green-100 border-green-200",
+              intent && isPending && "opacity-0"
+            )}
+            restaurant={match ?? filteredPlaces[index]}
+            stack={!match}
+          />
+        </div>
+        <div className="mt-4 relative z-[9]">
           {!match && (
             <div className="flex gap-8 justify-center">
               <CardButton
                 onClick={() => handleVote(false)}
                 disabled={isPending}
-                className="bg-red-500/30 hover:bg-red-500/50 text-red-800 outline-red-500"
+                className={cn(
+                  "bg-red-500/30 hover:bg-red-500/50 text-red-800 outline-red-500",
+                  intent === "left" &&
+                    "scale-125 transition-transform duration-200"
+                )}
               >
                 <TbThumbDown className="w-6 h-6" />
               </CardButton>
               <CardButton
                 onClick={() => handleVote(true)}
                 disabled={isPending}
-                className="bg-green-500/30 hover:bg-green-500/50 outline-green-500 text-green-800"
+                className={cn(
+                  "bg-green-500/30 hover:bg-green-500/50 outline-green-500 text-green-800",
+                  intent === "right" &&
+                    "scale-125 transition-transform duration-200"
+                )}
               >
                 <TbThumbUp className="w-6 h-6" />
               </CardButton>

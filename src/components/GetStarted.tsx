@@ -1,10 +1,11 @@
 "use client";
 
-import { startSession } from "@/actions/sessions";
 import { useActionState, useState } from "react";
-import MapWithAdvancedMarker from "./MapWithAdvancedMarker";
-import Input from "./Input";
 import { BsArrowRight } from "react-icons/bs";
+
+import { startSession } from "@/actions/sessions";
+import MapWithAdvancedMarker from "@/components/MapWithAdvancedMarker";
+import Input from "@/components/Input";
 
 type FormState = {
   sessionId: string;

@@ -2,7 +2,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { NotificationProvider } from "../../providers/NotificationProvider";
+import { NotificationProvider } from "@/providers/NotificationProvider";
 
 const queryClient = new QueryClient();
 

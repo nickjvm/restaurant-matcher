@@ -79,7 +79,11 @@ export default async function Page({
           <h2 className="text-xl font-bold">🎉 You agreed! 🎉</h2>
 
           <ConfettiComponent />
-          <RestaurantCard restaurant={match} className="animate-emphasize" />
+          <RestaurantCard
+            draggable={false}
+            restaurant={match}
+            className="animate-emphasize"
+          />
           <div className="mt-4 relative z-10">
             <CardButton as={Link} href="/" className="px-8">
               <IoRepeat className="w-5 h-5" />
@@ -94,7 +98,7 @@ export default async function Page({
   const votes = await getVotes(id);
 
   return (
-    <main className="p-6 h-full">
+    <main className="p-6 h-full overflow-hidden">
       <NearbyRestaurants
         votes={votes}
         user={user}

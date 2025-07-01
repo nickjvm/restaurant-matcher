@@ -1,11 +1,12 @@
 "use client";
 
 import { useActionState } from "react";
-import { signUp } from "@/actions/users";
-import { useParams } from "next/navigation";
-import Input from "./Input";
-import StaticMap from "./StaticMap";
 import { BsArrowRight } from "react-icons/bs";
+import { useParams } from "next/navigation";
+
+import { signUp } from "@/actions/users";
+import Input from "@/components/Input";
+import StaticMap from "@/components/StaticMap";
 
 type FormState = {
   user: {

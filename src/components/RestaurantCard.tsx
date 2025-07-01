@@ -11,15 +11,24 @@ type Props = {
   restaurant: YelpBusiness;
   stack?: boolean;
   className?: string;
+  onDrag?: (direction: "left" | "right" | null) => void;
+  onDragEnd?: (direction: "left" | "right" | null) => void;
+  draggable?: boolean;
 };
 
 export default function RestaurantCard({
   restaurant,
   stack,
   className,
+  onDrag,
+  onDragEnd,
+  draggable = true,
 }: Props) {
   return (
     <GameCard
+      draggable={draggable}
+      onDrag={onDrag}
+      onDragEnd={onDragEnd}
       key={restaurant.id}
       className={className}
       stack={stack}
