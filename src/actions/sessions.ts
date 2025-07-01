@@ -155,10 +155,13 @@ export async function vote(
         businessId,
       });
 
-      const details = await fetch(`http://localhost:3000/api/places/detail`, {
-        method: "POST",
-        body: JSON.stringify({ id: businessId }),
-      }).then((r) => r.json());
+      const details = await fetch(
+        `${process.env.NEXT_PUBLIC_API_ROOT}/api/places/detail`,
+        {
+          method: "POST",
+          body: JSON.stringify({ id: businessId }),
+        }
+      ).then((r) => r.json());
       return {
         match: true,
         business: details,
@@ -185,10 +188,13 @@ export async function getMatch(sessionId: string) {
     .get();
 
   if (result) {
-    return await fetch(`http://localhost:3000/api/places/detail`, {
-      method: "POST",
-      body: JSON.stringify({ id: result.businessId }),
-    }).then((r) => r.json());
+    return await fetch(
+      `${process.env.NEXT_PUBLIC_API_ROOT}/api/places/detail`,
+      {
+        method: "POST",
+        body: JSON.stringify({ id: result.businessId }),
+      }
+    ).then((r) => r.json());
   }
 
   return null;

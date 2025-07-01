@@ -18,18 +18,20 @@ This app is basically a Tinder for restaurants. Start a matching session and sha
 
 You will need a `.env` with values for:
 
-- [Yelp API Key](https://www.yelp.com/developers/v3/manage_app)
 - [Turso](https://turso.tech/) database URL
   - You just need to create an empty database to start. Read on for migration & seeding details
 - Turso auth token
-- Google Maps API Key
-  `.env` keys:
+- [Google Maps API Key](https://console.cloud.google.com/apis/credentials)
+  - You'll want to enable [Places API (new)](https://console.cloud.google.com/apis/library/places.googleapis.com) and [Maps JavaScript API](https://console.cloud.google.com/apis/library/maps-backend.googleapis.com)
+
+`.env` keys:
 
 ```
 YELP_API_KEY=
 TURSO_DATABASE_URL=
 TURSO_AUTH_TOKEN=
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
+NEXT_PUBLIC_API_ROOT=http://localhost:3000
 ```
 
 ### Setup the Database
