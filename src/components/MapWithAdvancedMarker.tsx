@@ -75,17 +75,27 @@ export default function MapWithAdvancedMarker({
       geoCoderRef.current?.geocode(
         { location: { lat, lng } },
         (results, status) => {
+          console.log(results);
           if (status === "OK" && results?.[0]) {
             const stateComponent = results[0].address_components.find(
               (component) =>
                 component.types.includes("administrative_area_level_1")
             );
-            const cityComponent = results[0].address_components.find(
-              (component) =>
-                component.types.includes("locality") ||
-                component.types.includes("neighborhood") ||
-                component.types.includes("administrative_area_level_2")
-            );
+
+            const typeOrder = [
+              "locality",
+              "neighborhood",
+              "administrative_area_level_2",
+              "postal_code",
+            ];
+            const cityComponent =
+              typeOrder
+                .map((type) =>
+                  results[0].address_components.find((component) =>
+                    component.types.includes(type)
+                  )
+                )
+                .find(Boolean) || null;
             resolve(
               `${cityComponent?.long_name || "Unknown"}, ${
                 stateComponent?.long_name || "Unknown"
@@ -165,7 +175,7 @@ export default function MapWithAdvancedMarker({
       });
 
       if (!getLocationFromCookie()) {
-        getCurrentLocation();
+        getLocationFromIpAddress();
       }
 
       if (editable) {

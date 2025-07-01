@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { BsArrowRight } from "react-icons/bs";
 
 import { startSession } from "@/actions/sessions";
 import MapWithAdvancedMarker from "@/components/MapWithAdvancedMarker";
 import Input from "@/components/Input";
+import { useNotification } from "@/providers/NotificationProvider";
 
 type FormState = {
   sessionId: string;
@@ -20,6 +21,7 @@ type User = {
 
 export default function GetStarted({ user }: { user?: User }) {
   const [locality, setLocality] = useState<string | null>(null);
+  const { addNotification } = useNotification();
   const [coords, setCoords] = useState<{
     lat: number;
     lng: number;
@@ -30,28 +32,40 @@ export default function GetStarted({ user }: { user?: User }) {
       return { ...prevState, error: "Location access is required" };
     }
 
-    try {
-      const name = formData.get("name") as string;
-      const result = await startSession({
-        name,
-        locationName: locality || "Nearby",
-        latitude: coords.lat,
-        longitude: coords.lng,
-      });
-      return result;
-    } catch (error) {
-      console.error("Failed to start session:", error);
-      return { ...prevState, error: "Failed to start session" };
+    const name = formData.get("name") as string;
+    const result = await startSession({
+      name,
+      locationName: locality || "Nearby",
+      latitude: coords.lat,
+      longitude: coords.lng,
+    });
+
+    if (result?.status === "error") {
+      return { ...prevState, error: result.message || "Unknown error" };
     }
   }
 
-  const [, formAction, isPending] = useActionState<FormState, FormData>(
+  const [formState, formAction, isPending] = useActionState<
+    FormState,
+    FormData
+  >(
     handleSubmit as (
       state: FormState,
       payload: FormData
     ) => FormState | Promise<FormState>,
     null
   );
+
+  useEffect(() => {
+    if (formState?.error) {
+      addNotification({
+        type: "error",
+        message: formState.error,
+        duration: 5000,
+      });
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [formState]);
   return (
     <form
       action={formAction}

@@ -24,54 +24,73 @@ export type StartSessionParams = {
   longitude: number;
 };
 
-export async function startSession(params: StartSessionParams) {
+export type StartSessionResponse = {
+  status: "success" | "error";
+  message?: string;
+};
+export async function startSession(
+  params: StartSessionParams
+): Promise<StartSessionResponse | void> {
   const cookieStore = await cookies();
 
   const userId = cookieStore.get("userId")?.value || uuid();
-  const user = await db
-    .insert(users)
-    .values({
-      id: userId,
-      name: params.name,
-    })
-    .onConflictDoUpdate({
-      target: users.id,
-      set: { name: params.name },
-    })
-    .returning()
-    .get();
+  let sessionId;
+  try {
+    const user = await db
+      .insert(users)
+      .values({
+        id: userId,
+        name: params.name,
+      })
+      .onConflictDoUpdate({
+        target: users.id,
+        set: { name: params.name },
+      })
+      .returning()
+      .get();
 
-  const session = await db
-    .insert(sessions)
-    .values({
-      sessionId: uuid(),
-      locationName: params.locationName,
-      latitude: params.latitude,
-      longitude: params.longitude,
-    })
-    .returning()
-    .get();
+    const session = await db
+      .insert(sessions)
+      .values({
+        sessionId: uuid(),
+        locationName: params.locationName,
+        latitude: params.latitude,
+        longitude: params.longitude,
+      })
+      .returning()
+      .get();
 
-  cookieStore.set("location", `${params.latitude},${params.longitude}`, {
-    path: "/",
-    httpOnly: false,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
-  });
+    sessionId = session.sessionId;
 
-  cookieStore.set("userId", user.id, {
-    path: "/",
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 365,
-  });
+    cookieStore.set("location", `${params.latitude},${params.longitude}`, {
+      path: "/",
+      httpOnly: false,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+    });
 
-  await db.insert(sessionUsers).values({
-    userId: user.id,
-    sessionId: session.sessionId,
-  });
+    cookieStore.set("userId", user.id, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 365,
+    });
 
-  redirect(`/play/${session.sessionId}`);
+    await db.insert(sessionUsers).values({
+      userId: user.id,
+      sessionId: session.sessionId,
+    });
+  } catch (e) {
+    console.error("Error starting session:", e);
+    return {
+      status: "error",
+      message: "Failed to start session. Please try again.",
+    };
+  }
+
+  if (sessionId) {
+    redirect(`/play/${sessionId}`);
+  }
 }
 
 export async function joinSession(sessionId: string) {
