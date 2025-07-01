@@ -313,7 +313,7 @@ export function NearbyRestaurants({
             onDrag={setIntent}
             onDragEnd={(intent) => {
               if (intent) {
-                handleVote(intent === "left");
+                handleVote(intent !== "left");
               }
             }}
             className={cn(
