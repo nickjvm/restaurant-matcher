@@ -83,7 +83,8 @@ export default function MapWithAdvancedMarker({
             const cityComponent = results[0].address_components.find(
               (component) =>
                 component.types.includes("locality") ||
-                component.types.includes("administrative_area_level_3")
+                component.types.includes("neighborhood") ||
+                component.types.includes("administrative_area_level_2")
             );
             resolve(
               `${cityComponent?.long_name || "Unknown"}, ${
@@ -154,6 +155,7 @@ export default function MapWithAdvancedMarker({
         zoom: 15,
         mapId: "8ba138aae55db801aa3a226d",
         disableDefaultUI: true,
+        clickableIcons: false,
       });
 
       markerRef.current = new AdvancedMarkerElement({
