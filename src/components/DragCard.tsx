@@ -1,28 +1,7 @@
 "use client";
 
 import { motion, useAnimationControls, useDragControls } from "framer-motion";
-import { useRef } from "react";
-
-export function DragCards() {
-  return (
-    <section className="relative grid min-h-screen w-full place-content-center overflow-hidden bg-neutral-950">
-      <h2 className="relative z-0 text-[20vw] font-black text-neutral-800 md:text-[200px]">
-        ASTRO
-      </h2>
-      <Cards />
-      asdf
-    </section>
-  );
-}
-
-const Cards = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  return (
-    <div className="relative inset-0 z-10 bg-red-500 p-4" ref={containerRef}>
-      <Card>omg</Card>
-    </div>
-  );
-};
+import { useEffect } from "react";
 
 type DragCardProps = {
   children: React.ReactNode;
@@ -39,6 +18,15 @@ export const Card = ({
 }: DragCardProps) => {
   const controls = useAnimationControls();
   const dragControls = useDragControls();
+
+  useEffect(() => {
+    if (!draggable) {
+      controls.start({ x: 0, y: 0 });
+      controls.set({ x: 0, y: 0 });
+    } else {
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [draggable]);
 
   return (
     <motion.div

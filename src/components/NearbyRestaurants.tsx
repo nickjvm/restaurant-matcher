@@ -62,7 +62,6 @@ export function NearbyRestaurants({
   const params = useParams();
   const [match, setMatch] = useState<YelpBusiness | null>(null);
   const [index, setIndex] = useState<number>(0);
-  const [votingComplete, setVotingComplete] = useState(false);
   const [sessionUserCount, setSessionUserCount] = useState(_sessionUserCount);
   const { addNotification } = useNotification();
   const [intent, setIntent] = useState<"left" | "right" | null>(null);
@@ -94,6 +93,7 @@ export function NearbyRestaurants({
     function onConnect() {
       socket.on("matched", (business: YelpBusiness) => {
         setMatch(business);
+        setIntent(null);
       });
 
       socket.emit("join", { user, sessionId: params.id });
@@ -133,6 +133,14 @@ export function NearbyRestaurants({
     // Filter out places that have already been voted on
     return !votes.some((vote) => vote.businessId === place.id);
   });
+
+  const [votingComplete, setVotingComplete] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && !filteredPlaces?.length && votes.length) {
+      setVotingComplete(true);
+    }
+  }, [isLoading, filteredPlaces?.length, votes.length]);
 
   if (isLoading)
     return (
@@ -263,10 +271,6 @@ export function NearbyRestaurants({
       })
         .then((r) => r.json())
         .then((response) => {
-          votes.push({
-            businessId: filteredPlaces[index].id,
-            voteType: like ? "like" : "dislike",
-          });
           socket.emit("vote", {
             sessionId: params.id,
             businessId: filteredPlaces[index].id,
@@ -279,6 +283,7 @@ export function NearbyRestaurants({
               business: response.business,
             });
             setMatch(response.business);
+            setIntent(null);
           } else {
             setIntent(null);
             setIndex((prevIndex) => {
