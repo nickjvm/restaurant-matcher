@@ -42,6 +42,7 @@ export const Card = ({
 
   return (
     <motion.div
+      className="touch-none"
       drag={draggable}
       dragControls={dragControls}
       dragListener={false}
@@ -55,12 +56,12 @@ export const Card = ({
         }
         e.stopPropagation();
       }}
-      dragConstraints={{
-        left: -200, // Allow dragging to the left
-        right: 200, // Allow dragging to the right
-        top: -100, // Allow dragging upwards
-        bottom: 100, // Allow dragging downwards
-      }}
+      // dragConstraints={{
+      //   left: -200, // Allow dragging to the left
+      //   right: 200, // Allow dragging to the right
+      //   top: -100, // Allow dragging upwards
+      //   bottom: 100, // Allow dragging downwards
+      // }}
       onDrag={(event, info) => {
         if (!draggable) {
           return;

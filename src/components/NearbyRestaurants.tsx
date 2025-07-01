@@ -298,7 +298,7 @@ export function NearbyRestaurants({
     <div className="h-full flex flex-col items-center justify-center">
       <GameHeader buttonLeft={true} buttonRight={sessionUserCount < 2} />
 
-      <div className="flex flex-col items-center gap-4 h-full justify-center">
+      <div className="flex flex-col items-center gap-2 h-full justify-center">
         <div className="flex gap-8 justify-center">
           {match && (
             <>

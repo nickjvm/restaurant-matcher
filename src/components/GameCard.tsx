@@ -30,7 +30,7 @@ export default function GameCard({
   category,
   onDrag,
   onDragEnd,
-  draggable = true,
+  draggable,
 }: Props) {
   return (
     <div className="relative">

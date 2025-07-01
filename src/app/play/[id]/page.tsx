@@ -75,15 +75,11 @@ export default async function Page({
   if (match) {
     return (
       <main className="p-6 h-full flex flex-col items-center justify-center">
-        <div className="flex gap-4 flex-col justify-center items-center">
+        <div className="flex gap-2 flex-col justify-center items-center">
           <h2 className="text-xl font-bold">🎉 You agreed! 🎉</h2>
 
           <ConfettiComponent />
-          <RestaurantCard
-            draggable={false}
-            restaurant={match}
-            className="animate-emphasize"
-          />
+          <RestaurantCard restaurant={match} className="animate-emphasize" />
           <div className="mt-4 relative z-10">
             <CardButton as={Link} href="/" className="px-8">
               <IoRepeat className="w-5 h-5" />

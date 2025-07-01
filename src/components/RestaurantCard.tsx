@@ -22,7 +22,7 @@ export default function RestaurantCard({
   className,
   onDrag,
   onDragEnd,
-  draggable = true,
+  draggable,
 }: Props) {
   return (
     <GameCard
