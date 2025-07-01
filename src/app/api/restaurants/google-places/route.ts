@@ -4,22 +4,45 @@ const GOOGLE_PLACES_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
 
 export async function POST(req: NextRequest) {
   try {
-    const { latitude, longitude, offset, limit, pageToken } = await req.json();
+    const { latitude, longitude, pageToken } = await req.json();
 
+    console.log(pageToken);
     // Google Places (New) API - Text Search request
+    // Approximate 5km in degrees (1 degree latitude ≈ 111km)
+    const delta = 0.5; // ~0.045 degrees
+
+    // Adjust delta for latitude (north/south) and longitude (east/west),
+    // and handle wrapping near the International Date Line and poles.
+    function clampLatitude(lat: number) {
+      return Math.max(-90, Math.min(90, lat));
+    }
+
+    function wrapLongitude(lng: number) {
+      if (lng < -180) return lng + 360;
+      if (lng > 180) return lng - 360;
+      return lng;
+    }
+
+    const lowLat = clampLatitude(latitude - delta);
+    const highLat = clampLatitude(latitude + delta);
+    const lowLng = wrapLongitude(longitude - delta);
+    const highLng = wrapLongitude(longitude + delta);
+
     const requestBody = {
-      locationBias: {
-        circle: {
-          center: {
-            latitude: latitude,
-            longitude: longitude,
+      locationRestriction: {
+        rectangle: {
+          low: {
+            latitude: lowLat,
+            longitude: lowLng,
           },
-          radius: 5000.0, // 5km radius
+          high: {
+            latitude: highLat,
+            longitude: highLng,
+          },
         },
       },
       pageSize: 20,
-      textQuery: "restaurants open now", // Search for restaurants
-      // Specify fields to return
+      textQuery: "restaurants open now",
       includedType: "restaurant",
       pageToken,
     };
@@ -32,7 +55,7 @@ export async function POST(req: NextRequest) {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
           "X-Goog-FieldMask":
-            "nextPageToken,places.id,places.displayName,places.photos,places.rating,places.userRatingCount,places.priceLevel,places.websiteUri,places.location,places.formattedAddress,places.types,places.currentOpeningHours",
+            "nextPageToken,places.id,places.displayName,places.photos,places.rating,places.userRatingCount,places.priceLevel,places.websiteUri,places.location,places.formattedAddress,places.types,places.currentOpeningHours,places.googleMapsUri",
         },
         body: JSON.stringify(requestBody),
       }
@@ -49,15 +72,7 @@ export async function POST(req: NextRequest) {
 
     const data = await response.json();
 
-    // console.log("Google Places API response:", data);
-    // Handle pagination by slicing the results based on offset
-    const places = data.places || [];
-    const paginatedPlaces = places.slice(offset, offset + limit);
-
-    return NextResponse.json({
-      places: paginatedPlaces,
-      total: places.length,
-    });
+    return NextResponse.json(data);
   } catch (error) {
     console.error("Google Places API error:", error);
     return NextResponse.json(

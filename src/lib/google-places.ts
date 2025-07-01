@@ -46,18 +46,20 @@ export interface GooglePlace {
   currentOpeningHours?: {
     openNow: boolean;
   };
+  googleMapsURI?: string;
 }
 
 // Convert Google Place to Yelp-like format for compatibility
 export interface YelpBusiness {
   id: string;
   name: string;
-  image_url: string;
+  photos: GooglePhoto[];
   rating?: number;
   review_count?: number;
   price?: string;
   attributes: {
     menu_url?: string;
+    maps_url?: string;
   };
   location?: {
     address1: string;
@@ -70,10 +72,12 @@ export interface YelpBusiness {
     longitude: number;
   };
   categories: { title: string }[];
-  url: string;
+  url?: string;
 }
 
-function convertGooglePlaceToYelpBusiness(place: GooglePlace): YelpBusiness {
+export function convertGooglePlaceToYelpBusiness(
+  place: GooglePlace
+): YelpBusiness {
   // Convert price level to Yelp-style price
   const getPriceString = (priceLevel?: string): string => {
     switch (priceLevel) {
@@ -133,13 +137,16 @@ function convertGooglePlaceToYelpBusiness(place: GooglePlace): YelpBusiness {
 
   return {
     id: place.id,
-    name: place.displayName.text,
-    image_url: getPhotoUrl(place),
+    name: place.displayName?.text,
+    photos: place.photos || [],
     rating: place.rating,
     review_count: place.userRatingCount,
     price: getPriceString(place.priceLevel),
     attributes: {
       menu_url: place.websiteUri,
+      maps_url:
+        place.googleMapsURI ||
+        `https://www.google.com/maps/place/?q=place_id:${place.id}`,
     },
     location: parseAddress(place.formattedAddress),
     coordinates: {
@@ -147,45 +154,32 @@ function convertGooglePlaceToYelpBusiness(place: GooglePlace): YelpBusiness {
       longitude: place.location.longitude,
     },
     categories: getCategories(place.types),
-    url:
-      place.websiteUri ||
-      `https://www.google.com/maps/place/?q=place_id:${place.id}`,
+    url: place.websiteUri,
   };
 }
 
-// Get photo URL
-export const getPhotoUrl = (place: Partial<GooglePlace>): string => {
+export const getPhotoUrl = (place: Partial<GooglePlace>): string | null => {
   if (!place.photos || place.photos.length === 0) {
-    return "/placeholder-restaurant.jpg"; // You'll need a placeholder image
+    return null;
   }
-
   const photo = place.photos[0];
   return `https://places.googleapis.com/v1/${photo.name}/media?maxWidthPx=400&maxHeightPx=400&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
 };
 
-export const GOOGLE_PLACES_API_KEY =
-  process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
-
 type FetchNearbyRestaurantsParams = {
   latitude: number;
   longitude: number;
-  offset: number;
-  limit: number;
-  nextPageToken?: string;
 };
 
 export interface FetchNearbyRestaurantsResponse {
   places: YelpBusiness[];
-  nextPageToken?: string;
 }
+
 export async function fetchNearbyRestaurants(
   params: FetchNearbyRestaurantsParams
 ): Promise<FetchNearbyRestaurantsResponse> {
-  const res = await fetch("/api/restaurants/google-places", {
+  const res = await fetch("/api/places", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(params),
   });
 
@@ -194,9 +188,9 @@ export async function fetchNearbyRestaurants(
   }
 
   const data = await res.json();
+
   return {
-    places: shuffleArray(data.places.map(convertGooglePlaceToYelpBusiness)),
-    nextPageToken: data.nextPageToken,
+    places: shuffleArray(data.places),
   };
 }
 

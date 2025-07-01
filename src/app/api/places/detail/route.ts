@@ -1,3 +1,4 @@
+import { convertGooglePlaceToYelpBusiness } from "@/lib/google-places";
 import { NextRequest, NextResponse } from "next/server";
 
 const GOOGLE_PLACES_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
@@ -13,7 +14,8 @@ export async function POST(req: NextRequest) {
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
-          "X-Goog-FieldMask": "generativeSummary,photos",
+          "X-Goog-FieldMask":
+            "id,displayName,photos,rating,userRatingCount,priceLevel,websiteUri,location,formattedAddress,types,currentOpeningHours,googleMapsUri,generativeSummary,photos",
         },
       }
     );
@@ -29,9 +31,7 @@ export async function POST(req: NextRequest) {
 
     const data = await response.json();
 
-    // console.log("Google Places API detail response:", data);
-
-    return NextResponse.json(data);
+    return NextResponse.json(convertGooglePlaceToYelpBusiness(data));
   } catch (error) {
     console.error("Google Places API error:", error);
     return NextResponse.json(

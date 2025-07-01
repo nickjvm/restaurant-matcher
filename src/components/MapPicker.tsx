@@ -42,7 +42,7 @@ export default function MapPicker({
     const locationCookie = document.cookie
       .split("; ")
       .find((row) => row.startsWith("location="));
-    console.log(document.cookie);
+
     if (locationCookie) {
       const [lat, lng] = decodeURIComponent(locationCookie.split("=")[1])
         .split(",")
@@ -88,7 +88,7 @@ export default function MapPicker({
       zoom={10}
       onClick={handleClick}
     >
-      <Marker position={markerPosition} onPositionChanged={console.log} />
+      <Marker position={markerPosition} />
     </GoogleMap>
   );
 }

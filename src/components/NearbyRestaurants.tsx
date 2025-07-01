@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -45,8 +45,6 @@ type Session = {
   locationName: string;
 };
 
-const LIMIT = 50;
-
 export function NearbyRestaurants({
   votes,
   user,
@@ -62,57 +60,34 @@ export function NearbyRestaurants({
 }) {
   const params = useParams();
   const [match, setMatch] = useState<YelpBusiness | null>(null);
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState<number>(0);
   const [votingComplete, setVotingComplete] = useState(false);
   const [sessionUserCount, setSessionUserCount] = useState(_sessionUserCount);
   const { addNotification } = useNotification();
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isError,
-  } = useInfiniteQuery<FetchNearbyRestaurantsResponse>({
-    queryKey: ["restaurants", session.latitude, session.longitude],
-    initialPageParam: 0,
-    queryFn: ({ pageParam }) =>
-      fetchNearbyRestaurants({
-        latitude: session.latitude,
-        longitude: session.longitude,
-        offset: (pageParam as number) * LIMIT,
-        limit: LIMIT,
-        nextPageToken: pageParam as string | undefined,
-      }),
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchInterval: false,
-    getNextPageParam: (lastPage) => {
-      // Return the next page number if there are more items
-      return lastPage.places.length === LIMIT
-        ? lastPage.nextPageToken
-        : undefined;
-    },
-  });
-
-  // Flatten the pages array
-  // and filter out cards they've already voted on
-  const restaurants = (data?.pages.map((p) => p.places).flat() || []).filter(
-    (restaurant) => !votes.find((vote) => vote.businessId === restaurant.id)
-  );
-
-  useEffect(() => {
-    if (index >= restaurants.length - 5 && !isFetchingNextPage && hasNextPage) {
-      fetchNextPage();
+  const { data, isLoading, isError } = useQuery<FetchNearbyRestaurantsResponse>(
+    {
+      queryKey: ["restaurants", session.latitude, session.longitude],
+      queryFn: async () => {
+        try {
+          return await fetchNearbyRestaurants({
+            latitude: session.latitude,
+            longitude: session.longitude,
+          });
+        } catch (error) {
+          console.error("Error fetching nearby restaurants:", error);
+          addNotification({
+            type: "error",
+            message: `Failed to fetch nearby restaurants. Please try again later.`,
+          });
+          return { places: [] };
+        }
+      },
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchInterval: false,
     }
-  }, [
-    index,
-    fetchNextPage,
-    restaurants.length,
-    isFetchingNextPage,
-    hasNextPage,
-  ]);
+  );
 
   useEffect(() => {
     function onConnect() {
@@ -160,11 +135,14 @@ export function NearbyRestaurants({
           title="Hang tight..."
           subtitle={`We're loading nearby restaurants`}
           description={`in ${session.locationName}`}
-          image={
-            <div className="bg-gray-200 rounded h-full p-4 flex items-center justify-center">
+          photos={[
+            <div
+              key="loading"
+              className="bg-gray-200 rounded h-full p-4 flex items-center justify-center"
+            >
               <AiOutlineLoading3Quarters className="w-12 h-12 animate-spin text-gray-500" />
-            </div>
-          }
+            </div>,
+          ]}
         />
       </div>
     );
@@ -178,11 +156,14 @@ export function NearbyRestaurants({
             title="Something went wrong"
             subtitle={`Unable to load nearby restaurants`}
             description={`in ${session.locationName}`}
-            image={
-              <div className="bg-gray-200 rounded h-full p-4 flex items-center justify-center">
+            photos={[
+              <div
+                key="error"
+                className="bg-gray-200 rounded h-full p-4 flex items-center justify-center"
+              >
                 <BsEmojiFrown className="w-12 h-12 text-gray-500" />
-              </div>
-            }
+              </div>,
+            ]}
             actions={[
               <Link
                 key="retry"
@@ -199,7 +180,7 @@ export function NearbyRestaurants({
       </div>
     );
 
-  if (votingComplete) {
+  if (votingComplete && !match) {
     return (
       <div className="h-full flex flex-col items-center justify-center">
         <GameHeader buttonLeft={true} buttonRight={sessionUserCount < 2} />
@@ -213,18 +194,21 @@ export function NearbyRestaurants({
                 ? `Now we wait and see if ${otherUser?.name} likes any of the same restaurants as you!`
                 : `Make sure you share this session with a friend so they can vote too!`
             }
-            image={
-              <div className="bg-green-800 rounded h-full p-4 flex items-center justify-center">
+            photos={[
+              <div
+                key="complete"
+                className="bg-green-800 rounded h-full p-4 flex items-center justify-center"
+              >
                 <FaRegThumbsUp className="w-12 h-12  text-white" />
-              </div>
-            }
+              </div>,
+            ]}
           />
         </div>
       </div>
     );
   }
 
-  if (!restaurants || (restaurants.length === 0 && !isFetchingNextPage)) {
+  if (!data?.places || (data.places.length === 0 && !isLoading)) {
     return (
       <div className="h-full flex flex-col items-center justify-center">
         <GameHeader buttonLeft={true} buttonRight={sessionUserCount < 2} />
@@ -238,11 +222,14 @@ export function NearbyRestaurants({
                 ? `Now we wait and see if ${otherUser?.name} likes any of the same restaurants as you!`
                 : `Make sure you share this session with a friend so they can vote too!`
             }
-            image={
-              <div className="bg-gray-200 rounded h-full p-4 flex items-center justify-center">
+            photos={[
+              <div
+                key="waiting"
+                className="bg-gray-200 rounded h-full p-4 flex items-center justify-center"
+              >
                 <FaRegHourglass className="w-12 h-12  text-gray-500" />
-              </div>
-            }
+              </div>,
+            ]}
           />
         </div>
       </div>
@@ -258,15 +245,19 @@ export function NearbyRestaurants({
         },
         body: JSON.stringify({
           sessionId: params.id,
-          businessId: restaurants[index].id,
+          businessId: data.places[index].id,
           voteType: like ? "like" : "dislike",
         }),
       })
         .then((r) => r.json())
         .then((response) => {
+          votes.push({
+            businessId: data.places[index].id,
+            voteType: like ? "like" : "dislike",
+          });
           socket.emit("vote", {
             sessionId: params.id,
-            businessId: restaurants[index].id,
+            businessId: data.places[index].id,
             vote: like ? "like" : "dislike",
             userId: user.id,
           });
@@ -277,11 +268,14 @@ export function NearbyRestaurants({
             });
             setMatch(response.business);
           } else {
-            if (index + 1 >= restaurants.length) {
-              setVotingComplete(true);
-            } else {
-              setIndex(index + 1);
-            }
+            setIndex((prevIndex) => {
+              const nextIndex = prevIndex + 1;
+              if (nextIndex >= data.places.length) {
+                setVotingComplete(true);
+                return prevIndex; // Don't increment if we've reached the end
+              }
+              return nextIndex;
+            });
           }
         });
     });
@@ -302,7 +296,7 @@ export function NearbyRestaurants({
         </div>
         <RestaurantCard
           className={cn(match && "animate-emphasize")}
-          restaurant={match ?? restaurants[index]}
+          restaurant={match ?? data.places[index]}
           stack={!match}
         />
         <div className="mt-4 relative z-10">
