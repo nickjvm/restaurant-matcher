@@ -14,16 +14,17 @@ export const Card = ({
   children,
   onDrag,
   onDragEnd,
-  draggable = true,
+  draggable,
 }: DragCardProps) => {
   const controls = useAnimationControls();
   const dragControls = useDragControls();
 
   useEffect(() => {
     if (!draggable) {
-      controls.start({ x: 0, y: 0 });
       controls.set({ x: 0, y: 0 });
+      controls.stop();
     } else {
+      controls.start({ x: 0, y: 0 });
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [draggable]);
