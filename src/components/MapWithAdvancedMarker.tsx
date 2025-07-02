@@ -41,15 +41,15 @@ export default function MapWithAdvancedMarker({
         setUserLocation(defaultLocation);
       });
 
-      const location = {
-          lat: data.lat,
-          lng: data.lon,
-        }
-      if (data.status !== 'fail') {
-        setUserLocation(location);
-      } else {
-        setUserLocation(defaultLocation)
-      }
+    const location = {
+      lat: data.lat,
+      lng: data.lon,
+    };
+    if (data.status !== "fail") {
+      setUserLocation(location);
+    } else {
+      setUserLocation(defaultLocation);
+    }
   }
 
   function getCurrentLocation() {
@@ -78,7 +78,6 @@ export default function MapWithAdvancedMarker({
       geoCoderRef.current?.geocode(
         { location: { lat, lng } },
         (results, status) => {
-          console.log(results);
           if (status === "OK" && results?.[0]) {
             const stateComponent = results[0].address_components.find(
               (component) =>
