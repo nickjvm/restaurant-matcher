@@ -175,6 +175,7 @@ export const getPhotoUrl = (place: Partial<GooglePlace>): string | null => {
 type FetchNearbyRestaurantsParams = {
   latitude: number;
   longitude: number;
+  category: string;
 };
 
 export interface FetchNearbyRestaurantsResponse {

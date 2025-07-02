@@ -19,6 +19,7 @@ export async function fetchSession(sessionId: string) {
 
 export type StartSessionParams = {
   name: string;
+  category?: string;
   locationName: string;
   latitude: number;
   longitude: number;
@@ -53,6 +54,7 @@ export async function startSession(
       .insert(sessions)
       .values({
         sessionId: uuid(),
+        category: params.category,
         locationName: params.locationName,
         latitude: params.latitude,
         longitude: params.longitude,

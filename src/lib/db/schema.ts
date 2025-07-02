@@ -15,7 +15,7 @@ export const sessions = sqliteTable("sessions", {
   locationName: text("location_name").notNull(),
   latitude: real().notNull(),
   longitude: real().notNull(),
-  filters: numeric(),
+  category: text("category").default(""),
   isActive: numeric("is_active").default(sql`(TRUE)`),
   matchNotified: numeric("match_notified").default(sql`(FALSE)`),
 });

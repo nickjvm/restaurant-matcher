@@ -32,7 +32,8 @@ const quadrantBounds = (lat: number, lng: number, delta = DELTA) => [
 
 async function fetchPlacesInBounds(
   low: { lat: number; lng: number },
-  high: { lat: number; lng: number }
+  high: { lat: number; lng: number },
+  category = "sit down"
 ) {
   const res = await fetch(API_URL, {
     method: "POST",
@@ -46,7 +47,9 @@ async function fetchPlacesInBounds(
       includedType: "restaurant",
       pageSize: 20,
       openNow: true,
-      textQuery: "sit down restaurants",
+      textQuery: `best ${category} restaurants`,
+      // priceLevels: [],
+      minRating: 3.5,
       locationRestriction: {
         rectangle: {
           low: { latitude: low.lat, longitude: low.lng },
@@ -67,7 +70,7 @@ async function fetchPlacesInBounds(
 }
 
 export async function POST(req: NextRequest) {
-  const { latitude, longitude } = await req.json();
+  const { latitude, longitude, category } = await req.json();
 
   const lat = parseFloat(latitude);
   const lng = parseFloat(longitude);
@@ -82,10 +85,8 @@ export async function POST(req: NextRequest) {
   const places: YelpBusiness[] = [];
   const bounds = quadrantBounds(lat, lng);
 
-  // const results = await fetchPlacesInBounds(bounds[0].low, bounds[0].high);
-
   for (const { low, high } of bounds) {
-    const results = await fetchPlacesInBounds(low, high);
+    const results = await fetchPlacesInBounds(low, high, category);
     for (const place of results) {
       if (!seen.has(place.id)) {
         seen.add(place.id);

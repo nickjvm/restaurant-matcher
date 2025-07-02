@@ -23,6 +23,7 @@ type Props = {
     latitude: number;
     longitude: number;
     locationName: string;
+    category: string | null;
   };
   invitedBy: {
     id: string;
@@ -54,7 +55,7 @@ export default function SignUp({ session, invitedBy }: Props) {
     >
       <header className="text-center">
         <h2 className="text-lg font-bold">
-          Help {invitedBy.name} pick a restaurant near{" "}
+          Help {invitedBy.name} pick a {session.category ?? ''} restaurant near{" "}
         </h2>
         <h3 className="text-xl font-bold">{session.locationName}!</h3>
       </header>

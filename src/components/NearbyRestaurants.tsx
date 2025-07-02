@@ -44,6 +44,7 @@ type Session = {
   latitude: number;
   longitude: number;
   locationName: string;
+  category: string | null
 };
 
 export function NearbyRestaurants({
@@ -67,12 +68,13 @@ export function NearbyRestaurants({
   const [intent, setIntent] = useState<"left" | "right" | null>(null);
   const { data, isLoading, isError } = useQuery<FetchNearbyRestaurantsResponse>(
     {
-      queryKey: ["restaurants", session.latitude, session.longitude],
+      queryKey: ["restaurants", session.latitude, session.longitude, session.category],
       queryFn: async () => {
         try {
           return await fetchNearbyRestaurants({
             latitude: session.latitude,
             longitude: session.longitude,
+            category: session.category || '',
           });
         } catch (error) {
           console.error("Error fetching nearby restaurants:", error);
@@ -147,7 +149,7 @@ export function NearbyRestaurants({
       <div className="h-full flex flex-col items-center justify-center">
         <GameCard
           title="Hang tight..."
-          subtitle={`We're loading nearby restaurants`}
+          subtitle={`We're loading nearby ${session.category} restaurants`}
           description={`in ${session.locationName}`}
           photos={[
             <div

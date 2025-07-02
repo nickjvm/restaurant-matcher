@@ -33,7 +33,7 @@ export default function GameCard({
   draggable,
 }: Props) {
   return (
-    <div className="relative">
+    <div className="relative select-none">
       {stack &&
         [2, 1].map((i) => {
           const offset = i * 5;
