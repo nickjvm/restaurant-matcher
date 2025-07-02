@@ -1,11 +1,13 @@
 import {
   convertGooglePlaceToYelpBusiness,
+  GooglePlace,
   YelpBusiness,
 } from "@/lib/google-places";
 import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = "https://places.googleapis.com/v1/places:searchText";
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
+const SEARCH_TYPE = process.env.SEARCH_TYPE || "radius";
 
 const DEG_PER_MILE = 1 / 69;
 const TOTAL_MILES = 8;
@@ -30,17 +32,77 @@ const quadrantBounds = (lat: number, lng: number, delta = DELTA) => [
   },
 ];
 
-async function fetchPlacesInBounds(
-  low: { lat: number; lng: number },
-  high: { lat: number; lng: number }
-) {
+const FIELD_MASK = [
+  "places.id",
+  "places.displayName",
+  "places.photos",
+  "places.rating",
+  "places.userRatingCount",
+  "places.priceLevel",
+  "places.websiteUri",
+  "places.location",
+  "places.formattedAddress",
+  "places.types",
+  "places.currentOpeningHours",
+  "places.googleMapsLinks",
+];
+
+async function fetchMockData() {
+  console.log(">>> MOCK DATA: /places");
+
+  return import("@/app/api/mock/places.json") as Promise<{
+    places: GooglePlace[];
+  }>;
+}
+
+async function fetchPlacesInRadius(
+  lat: number,
+  lon: number,
+  radius = 5000
+): Promise<GooglePlace[]> {
+  if (process.env.USE_MOCK_DATA === "true") {
+    return (await fetchMockData()).places;
+  }
+
   const res = await fetch(API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-Goog-Api-Key": API_KEY,
-      "X-Goog-FieldMask":
-        "places.id,places.displayName,places.photos,places.rating,places.userRatingCount,places.priceLevel,places.websiteUri,places.location,places.formattedAddress,places.types,places.currentOpeningHours,places.googleMapsLinks",
+      "X-Goog-FieldMask": FIELD_MASK.join(","),
+    },
+    body: JSON.stringify({
+      includedType: "restaurant",
+      pageSize: 20,
+      openNow: true,
+      textQuery: "sit down restaurants",
+      locationBias: {
+        circle: {
+          center: { latitude: lat, longitude: lon },
+          radius,
+        },
+      },
+    }),
+  });
+
+  const json = await res.json();
+  return json.places || ([] as GooglePlace[]);
+}
+
+async function fetchPlacesInBounds(
+  low: { lat: number; lng: number },
+  high: { lat: number; lng: number }
+): Promise<GooglePlace[]> {
+  if (process.env.USE_MOCK_DATA === "true") {
+    return (await fetchMockData()).places;
+  }
+
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": API_KEY,
+      "X-Goog-FieldMask": FIELD_MASK.join(","),
     },
     body: JSON.stringify({
       includedType: "restaurant",
@@ -52,22 +114,16 @@ async function fetchPlacesInBounds(
           low: { latitude: low.lat, longitude: low.lng },
           high: { latitude: high.lat, longitude: high.lng },
         },
-        // circle: {
-        //   center: { latitude: low.lat, longitude: low.lng },
-        //   radius: 5000, // 5 km radius
-        // },
       },
     }),
   });
 
   const json = await res.json();
-
-  // console.log(json.places.length, "places found in bounds");
   return json.places || [];
 }
 
 export async function POST(req: NextRequest) {
-  const { latitude, longitude } = await req.json();
+  const { latitude, longitude, raw } = await req.json();
 
   const lat = parseFloat(latitude);
   const lng = parseFloat(longitude);
@@ -78,23 +134,28 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const seen = new Set<string>();
-  const places: YelpBusiness[] = [];
-  const bounds = quadrantBounds(lat, lng);
+  let results: GooglePlace[] = [];
+  let places: YelpBusiness[] = [];
 
-  // const results = await fetchPlacesInBounds(bounds[0].low, bounds[0].high);
+  if (SEARCH_TYPE === "radius") {
+    results = await fetchPlacesInRadius(lat, lng);
+    places = results.map(convertGooglePlaceToYelpBusiness);
+  } else if (SEARCH_TYPE === "bounds") {
+    const seen = new Set<string>();
+    const bounds = quadrantBounds(lat, lng);
 
-  for (const { low, high } of bounds) {
-    const results = await fetchPlacesInBounds(low, high);
-    for (const place of results) {
-      if (!seen.has(place.id)) {
-        seen.add(place.id);
-        places.push(convertGooglePlaceToYelpBusiness(place));
+    for (const { low, high } of bounds) {
+      const results = await fetchPlacesInBounds(low, high);
+      for (const place of results) {
+        if (!seen.has(place.id)) {
+          seen.add(place.id);
+          places.push(convertGooglePlaceToYelpBusiness(place));
+        }
       }
     }
   }
 
   return NextResponse.json({
-    places,
+    places: raw ? results : places,
   });
 }
