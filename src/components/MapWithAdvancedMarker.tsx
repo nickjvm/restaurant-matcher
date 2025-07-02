@@ -99,8 +99,7 @@ export default function MapWithAdvancedMarker({
                 )
                 .find(Boolean) || null;
             resolve(
-              `${cityComponent?.long_name || "Unknown"}, ${
-                stateComponent?.long_name || "Unknown"
+              `${cityComponent?.long_name || "Unknown"}, ${stateComponent?.long_name || "Unknown"
               }`
             );
           } else {
@@ -206,7 +205,7 @@ export default function MapWithAdvancedMarker({
       <div className="w-full mb-2 relative">
         <div
           ref={mapContainerRef}
-          style={{ height: 300, width: "100%" }}
+          style={{ height: 250, width: "100%" }}
           className="rounded-lg"
         />
         <button

@@ -160,6 +160,8 @@ export function NearbyRestaurants({
                 lat={session.latitude}
                 lng={session.longitude}
                 zoom={12}
+                width={400}
+                height={400}
                 className="mb-2 w-full h-full object-cover rounded"
               />
               <AiOutlineLoading3Quarters className="absolute top-1/2 left-1/2 -translate-1/2 w-12 h-12 animate-spin text-gray-500" />
@@ -343,7 +345,7 @@ export function NearbyRestaurants({
                 className={cn(
                   "bg-red-500/30 hover:bg-red-500/50 text-red-800 outline-red-500",
                   intent === "left" &&
-                    "scale-125 transition-transform duration-200"
+                  "scale-125 transition-transform duration-200"
                 )}
               >
                 <TbThumbDown className="w-6 h-6" />
@@ -354,7 +356,7 @@ export function NearbyRestaurants({
                 className={cn(
                   "bg-green-500/30 hover:bg-green-500/50 outline-green-500 text-green-800",
                   intent === "right" &&
-                    "scale-125 transition-transform duration-200"
+                  "scale-125 transition-transform duration-200"
                 )}
               >
                 <TbThumbUp className="w-6 h-6" />

@@ -51,7 +51,7 @@ export default function SignUp({ session, invitedBy }: Props) {
   return (
     <form
       action={formAction}
-      className="m-auto p-4 h-full w-full max-w-128 flex flex-col items-center justify-center space-y-4 md:space-y-8"
+      className="m-auto p-4 h-full w-full max-w-128 space-y-4 md:space-y-8 flex flex-col before:content-[''] after:content-[''] before:mt-auto after:mb-auto after:pb-4"
     >
       <header className="text-center">
         <h2 className="text-lg font-bold">
@@ -62,6 +62,8 @@ export default function SignUp({ session, invitedBy }: Props) {
       <StaticMap
         lat={session.latitude}
         lng={session.longitude}
+        height={250}
+        width={512}
         zoom={12}
         className="mb-2"
       />
@@ -69,7 +71,7 @@ export default function SignUp({ session, invitedBy }: Props) {
         Once you join, you&apos;ll be able to see and vote on restaurants near
         this location.
       </p>
-      <div className="flex flex-col gap-2 w-full items-center px-4">
+      <div className="flex flex-col gap-2 w-full items-center sm:px-4">
         <Input
           label="Your Name"
           autoFocus

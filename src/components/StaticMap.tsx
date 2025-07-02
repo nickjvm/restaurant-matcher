@@ -7,10 +7,12 @@ type Props = {
   lng: number;
   zoom?: number;
   className?: string;
+  width?: number;
+  height?: number;
 };
 
-export default function StaticMap({ lat, lng, zoom = 15, className }: Props) {
-  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoom}&size=343x300&maptype=roadmap&markers=color:red%7C${lat},${lng}&key=${apiKey}`;
+export default function StaticMap({ lat, lng, zoom = 12, className, width = 343, height = 300 }: Props) {
+  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoom}&size=${width}x${height}&maptype=roadmap&markers=color:red%7C${lat},${lng}&key=${apiKey}`;
 
   return (
     /* eslint-disable-next-line @next/next/no-img-element */
