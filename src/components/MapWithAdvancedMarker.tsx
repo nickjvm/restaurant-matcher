@@ -21,11 +21,11 @@ const defaultLocation: google.maps.LatLngLiteral = {
 
 export default function MapWithAdvancedMarker({
   onLocationChange,
-  location = defaultLocation,
+  location,
   editable = true,
 }: Props) {
   const [userLocation, setUserLocation] =
-    useState<google.maps.LatLngLiteral>(location);
+    useState<google.maps.LatLngLiteral | null>(location ?? null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -41,12 +41,15 @@ export default function MapWithAdvancedMarker({
         setUserLocation(defaultLocation);
       });
 
-    const location = {
-      lat: data.lat,
-      lng: data.lon,
-    };
-
-    setUserLocation(location);
+      const location = {
+          lat: data.lat,
+          lng: data.lon,
+        }
+      if (data.status !== 'fail') {
+        setUserLocation(location);
+      } else {
+        setUserLocation(defaultLocation)
+      }
   }
 
   function getCurrentLocation() {

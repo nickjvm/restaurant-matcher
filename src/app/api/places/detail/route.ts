@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
           "X-Goog-FieldMask":
-            "id,displayName,photos,rating,userRatingCount,priceLevel,websiteUri,location,formattedAddress,types,currentOpeningHours,googleMapsUri,generativeSummary,photos",
+            "id,displayName,photos,rating,userRatingCount,priceLevel,websiteUri,location,formattedAddress,types,currentOpeningHours,googleMapsUri,generativeSummary,photos,googleMapsLinks",
         },
       }
     );

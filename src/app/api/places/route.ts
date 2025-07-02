@@ -40,7 +40,7 @@ async function fetchPlacesInBounds(
       "Content-Type": "application/json",
       "X-Goog-Api-Key": API_KEY,
       "X-Goog-FieldMask":
-        "places.id,places.displayName,places.photos,places.rating,places.userRatingCount,places.priceLevel,places.websiteUri,places.location,places.formattedAddress,places.types,places.currentOpeningHours,places.googleMapsUri",
+        "places.id,places.displayName,places.photos,places.rating,places.userRatingCount,places.priceLevel,places.websiteUri,places.location,places.formattedAddress,places.types,places.currentOpeningHours,places.googleMapsLinks",
     },
     body: JSON.stringify({
       includedType: "restaurant",

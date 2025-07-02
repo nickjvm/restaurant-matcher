@@ -46,6 +46,12 @@ export interface GooglePlace {
   currentOpeningHours?: {
     openNow: boolean;
   };
+  googleMapsLinks: {
+    placeUri: string;
+    directionsUri: string;
+    reviewsUri: string;
+    photosUri: string;
+  };
   googleMapsURI?: string;
 }
 
@@ -145,8 +151,8 @@ export function convertGooglePlaceToYelpBusiness(
     attributes: {
       menu_url: place.websiteUri,
       maps_url:
-        place.googleMapsURI ||
-        `https://www.google.com/maps/place/?q=place_id:${place.id}`,
+        place.googleMapsLinks.placeUri ||
+        `https://www.google.com/maps/search/?api=1&query=%20&query_place_id=${place.id}`,
     },
     location: parseAddress(place.formattedAddress),
     coordinates: {

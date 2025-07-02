@@ -87,7 +87,6 @@ export default function GetStarted({ user }: { user?: User }) {
       <div className="flex flex-col gap-2 w-full items-center px-4">
         <Input
           label="Your Name"
-          autoFocus
           id="name"
           name="name"
           defaultValue={user?.name || ""}
