@@ -147,8 +147,6 @@ export async function POST(req: NextRequest) {
     const seen = new Set<string>();
     const bounds = quadrantBounds(lat, lng);
 
-  // const results = await fetchPlacesInBounds(bounds[0].low, bounds[0].high);
-
     for (const { low, high } of bounds) {
       const results = await fetchPlacesInBounds(low, high, category);
       for (const place of results) {
