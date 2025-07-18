@@ -55,13 +55,43 @@ async function fetchMockData() {
   }>;
 }
 
+type GooglePlacesSuccessResponse = {
+  places: GooglePlace[];
+};
+
+type GooglePlacesErrorResponse = {
+  error: {
+    code: number;
+    message: string;
+    status: string;
+    details: {
+      "@type": string;
+      locale?: string;
+      message?: string;
+      reason: string;
+      domain: string;
+      metadata: {
+        service: string;
+        httpReferrer: string;
+        consumer: string;
+      };
+    };
+  };
+};
+type GooglePlacesResponse =
+  | GooglePlacesSuccessResponse
+  | GooglePlacesErrorResponse;
+
 async function fetchPlacesInRadius(
   lat: number,
   lon: number,
-  radius = 5000
-): Promise<GooglePlace[]> {
+  radius = 5000,
+  req: NextRequest
+): Promise<GooglePlacesResponse> {
   if (process.env.USE_MOCK_DATA === "true") {
-    return (await fetchMockData()).places;
+    return {
+      places: (await fetchMockData()).places,
+    };
   }
 
   const res = await fetch(API_URL, {
@@ -70,6 +100,7 @@ async function fetchPlacesInRadius(
       "Content-Type": "application/json",
       "X-Goog-Api-Key": API_KEY,
       "X-Goog-FieldMask": FIELD_MASK.join(","),
+      Referer: req.headers.get("referer") || "",
     },
     body: JSON.stringify({
       includedType: "restaurant",
@@ -86,7 +117,8 @@ async function fetchPlacesInRadius(
   });
 
   const json = await res.json();
-  return json.places || ([] as GooglePlace[]);
+
+  return json;
 }
 
 async function fetchPlacesInBounds(
@@ -125,6 +157,12 @@ async function fetchPlacesInBounds(
   return json.places || [];
 }
 
+function isErrorResponse(
+  data: GooglePlacesResponse
+): data is GooglePlacesErrorResponse {
+  return "error" in data;
+}
+
 export async function POST(req: NextRequest) {
   const { latitude, longitude, raw, category } = await req.json();
 
@@ -141,8 +179,15 @@ export async function POST(req: NextRequest) {
   let places: YelpBusiness[] = [];
 
   if (SEARCH_TYPE === "radius") {
-    results = await fetchPlacesInRadius(lat, lng);
-    places = results.map(convertGooglePlaceToYelpBusiness);
+    const data = await fetchPlacesInRadius(lat, lng, 5000, req);
+
+    if (isErrorResponse(data)) {
+      console.error("Google Places API error:", data.error);
+      return NextResponse.json(data, { status: data.error.code });
+    } else {
+      results = data.places;
+      places = results.map(convertGooglePlaceToYelpBusiness);
+    }
   } else if (SEARCH_TYPE === "bounds") {
     const seen = new Set<string>();
     const bounds = quadrantBounds(lat, lng);

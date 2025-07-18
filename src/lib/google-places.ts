@@ -190,11 +190,14 @@ export async function fetchNearbyRestaurants(
     body: JSON.stringify(params),
   });
 
-  if (!res.ok) {
-    throw new Error(`Google Places API error: ${res.statusText}`);
-  }
-
   const data = await res.json();
+
+  if (!res.ok) {
+    console.error("Google Places API error:", data);
+    return {
+      places: [],
+    };
+  }
 
   return {
     places: shuffleArray(data.places),

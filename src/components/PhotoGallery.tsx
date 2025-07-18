@@ -37,6 +37,7 @@ function Photo({ src, alt, priority }: PhotoProps) {
             width={400}
             height={400}
             className="object-cover h-full"
+            unoptimized
           />
         )}
       </div>
